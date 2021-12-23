@@ -1,5 +1,7 @@
 ﻿using SuchByte.MacroDeck.GUI.CustomControls;
 using System;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace RecklessBoon.MacroDeck.Discord
 {
@@ -44,5 +46,39 @@ namespace RecklessBoon.MacroDeck.Discord
             this.Close();
         }
 
+        private void linkLabel1_LinkClicked(object sender, System.Windows.Forms.LinkLabelLinkClickedEventArgs e)
+        {
+            OpenUrl("https://discord.com/developers/applications");
+        }
+
+        // Yoinked from: https://stackoverflow.com/a/43232486
+        private void OpenUrl(string url)
+        {
+            try
+            {
+                Process.Start(url);
+            }
+            catch
+            {
+                // hack because of this: https://github.com/dotnet/corefx/issues/10361
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    url = url.Replace("&", "^&");
+                    Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    Process.Start("xdg-open", url);
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    Process.Start("open", url);
+                }
+                else
+                {
+                    throw;
+                }
+            }
+        }
     }
 }

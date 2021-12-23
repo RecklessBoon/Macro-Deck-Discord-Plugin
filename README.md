@@ -100,13 +100,14 @@ you change your mute/deafen state **while in a voice channel**
 
 This is a plugin for [Macro Deck 2](https://github.com/SuchByte/Macro-Deck), it does **NOT** function as a standalone app
 
-### Third Party Licenses
+### Third Party Licenses / Thank you
 
 This plugin is built upon the shoulders of giants. Here are their licenses:
 
-- [Newtonsoft.Json](https://www.newtonsoft.com/json) - [MIT License](https://github.com/JamesNK/Newtonsoft.Json/blob/master/LICENSE.md)
-- [Discord.Net](https://discordnet.dev/) - [MIT License](https://github.com/discord-net/Discord.Net/blob/dev/LICENSE)
-- [Discord Rich Presence](https://github.com/Lachee/discord-rpc-csharp) - [MIT License](https://github.com/Lachee/discord-rpc-csharp/blob/master/LICENSE)
+- [Newtonsoft.Json](https://www.newtonsoft.com/json)
+- [Discord.Net](https://discordnet.dev/)
+- [Discord Rich Presence](https://github.com/Lachee/discord-rpc-csharp)
 
-Icons:
-- [Material Design Icons](https://materialdesignicons.com/)
+The icons used are not mine:
+- (Eye icons) [Material Design Icons](https://materialdesignicons.com/)
+- (Plugin icons) Discord user MakeTrue#0776

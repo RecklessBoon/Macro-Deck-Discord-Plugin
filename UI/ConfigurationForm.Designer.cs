@@ -35,12 +35,13 @@ namespace RecklessBoon.MacroDeck.Discord
             this.btnOk = new SuchByte.MacroDeck.GUI.CustomControls.ButtonPrimary();
             this.lblClientSecret = new System.Windows.Forms.Label();
             this.clientSecret = new RecklessBoon.MacroDeck.Discord.UI.PeekablePassword();
+            this.linkLabel1 = new System.Windows.Forms.LinkLabel();
             this.SuspendLayout();
             // 
             // label1
             // 
             this.label1.Font = new System.Drawing.Font("Tahoma", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.label1.Location = new System.Drawing.Point(8, 38);
+            this.label1.Location = new System.Drawing.Point(8, 35);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(97, 29);
             this.label1.TabIndex = 20;
@@ -53,7 +54,7 @@ namespace RecklessBoon.MacroDeck.Discord
             this.clientId.Cursor = System.Windows.Forms.Cursors.Hand;
             this.clientId.Font = new System.Drawing.Font("Tahoma", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.clientId.Icon = null;
-            this.clientId.Location = new System.Drawing.Point(111, 38);
+            this.clientId.Location = new System.Drawing.Point(111, 35);
             this.clientId.MaxCharacters = 32767;
             this.clientId.Multiline = false;
             this.clientId.Name = "clientId";
@@ -78,7 +79,7 @@ namespace RecklessBoon.MacroDeck.Discord
             this.btnOk.ForeColor = System.Drawing.Color.White;
             this.btnOk.HoverColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(89)))), ((int)(((byte)(184)))));
             this.btnOk.Icon = null;
-            this.btnOk.Location = new System.Drawing.Point(331, 105);
+            this.btnOk.Location = new System.Drawing.Point(331, 102);
             this.btnOk.Name = "btnOk";
             this.btnOk.Progress = 0;
             this.btnOk.ProgressColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(46)))), ((int)(((byte)(94)))));
@@ -91,7 +92,7 @@ namespace RecklessBoon.MacroDeck.Discord
             // lblClientSecret
             // 
             this.lblClientSecret.Font = new System.Drawing.Font("Tahoma", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.lblClientSecret.Location = new System.Drawing.Point(8, 69);
+            this.lblClientSecret.Location = new System.Drawing.Point(8, 66);
             this.lblClientSecret.Name = "lblClientSecret";
             this.lblClientSecret.Size = new System.Drawing.Size(97, 29);
             this.lblClientSecret.TabIndex = 17;
@@ -103,16 +104,32 @@ namespace RecklessBoon.MacroDeck.Discord
             this.clientSecret.AutoSize = true;
             this.clientSecret.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.clientSecret.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(45)))), ((int)(((byte)(45)))), ((int)(((byte)(45)))));
-            this.clientSecret.Location = new System.Drawing.Point(111, 69);
+            this.clientSecret.Location = new System.Drawing.Point(111, 66);
             this.clientSecret.Name = "clientSecret";
             this.clientSecret.Size = new System.Drawing.Size(295, 30);
             this.clientSecret.TabIndex = 21;
+            // 
+            // linkLabel1
+            // 
+            this.linkLabel1.ActiveLinkColor = System.Drawing.Color.White;
+            this.linkLabel1.AutoSize = true;
+            this.linkLabel1.DisabledLinkColor = System.Drawing.Color.FromArgb(((int)(((byte)(35)))), ((int)(((byte)(39)))), ((int)(((byte)(42)))));
+            this.linkLabel1.LinkColor = System.Drawing.Color.FromArgb(((int)(((byte)(114)))), ((int)(((byte)(137)))), ((int)(((byte)(218)))));
+            this.linkLabel1.Location = new System.Drawing.Point(173, 106);
+            this.linkLabel1.Name = "linkLabel1";
+            this.linkLabel1.Size = new System.Drawing.Size(152, 16);
+            this.linkLabel1.TabIndex = 22;
+            this.linkLabel1.TabStop = true;
+            this.linkLabel1.Text = "Discord Application Portal";
+            this.linkLabel1.VisitedLinkColor = System.Drawing.Color.FromArgb(((int)(((byte)(78)))), ((int)(((byte)(93)))), ((int)(((byte)(148)))));
+            this.linkLabel1.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabel1_LinkClicked);
             // 
             // ConfigurationForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(415, 141);
+            this.ClientSize = new System.Drawing.Size(415, 142);
+            this.Controls.Add(this.linkLabel1);
             this.Controls.Add(this.clientSecret);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.clientId);
@@ -126,6 +143,7 @@ namespace RecklessBoon.MacroDeck.Discord
             this.Controls.SetChildIndex(this.clientId, 0);
             this.Controls.SetChildIndex(this.label1, 0);
             this.Controls.SetChildIndex(this.clientSecret, 0);
+            this.Controls.SetChildIndex(this.linkLabel1, 0);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -138,5 +156,6 @@ namespace RecklessBoon.MacroDeck.Discord
         private ButtonPrimary btnOk;
         private System.Windows.Forms.Label lblClientSecret;
         private UI.PeekablePassword clientSecret;
+        private System.Windows.Forms.LinkLabel linkLabel1;
     }
 }
