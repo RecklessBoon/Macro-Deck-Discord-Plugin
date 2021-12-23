@@ -8,6 +8,7 @@
 	<RepositoryUrl>https://github.com/RecklessBoon/Macro-Deck-Discord-Plugin</RepositoryUrl>
     <Authors>RecklessBoon</Authors>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <PackageId>Discord Plugin</PackageId>
   </PropertyGroup>
 
   <ItemGroup>
