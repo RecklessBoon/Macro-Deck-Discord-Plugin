@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0"?>
 <PluginManifest xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
 	<Author>RecklessBoon</Author>
-	<MainFile>RecklessBoon.MacroDeck.Discord.dll</MainFile>
+	<MainFile>Discord Plugin.dll</MainFile>
 </PluginManifest>
