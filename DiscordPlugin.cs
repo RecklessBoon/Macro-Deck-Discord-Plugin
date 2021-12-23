@@ -106,7 +106,7 @@ namespace RecklessBoon.MacroDeck.Discord
 
         protected void InitClient()
         {
-            if ((RPCClient == null || RPCClient.IsDisposed) && PluginInstance.Plugin.configuration.ClientId != null)
+            if ((RPCClient == null || RPCClient.IsDisposed) && !String.IsNullOrEmpty(PluginInstance.Plugin.configuration.ClientId))
             {
                 _RPCClient = new RPCClient(PluginInstance.Plugin.configuration.ClientId);
                 ConnectClients();
