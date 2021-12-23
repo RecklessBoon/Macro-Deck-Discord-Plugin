@@ -115,12 +115,12 @@ namespace RecklessBoon.MacroDeck.Discord
             this.linkLabel1.AutoSize = true;
             this.linkLabel1.DisabledLinkColor = System.Drawing.Color.FromArgb(((int)(((byte)(35)))), ((int)(((byte)(39)))), ((int)(((byte)(42)))));
             this.linkLabel1.LinkColor = System.Drawing.Color.FromArgb(((int)(((byte)(114)))), ((int)(((byte)(137)))), ((int)(((byte)(218)))));
-            this.linkLabel1.Location = new System.Drawing.Point(173, 106);
+            this.linkLabel1.Location = new System.Drawing.Point(293, 106);
             this.linkLabel1.Name = "linkLabel1";
-            this.linkLabel1.Size = new System.Drawing.Size(152, 16);
+            this.linkLabel1.Size = new System.Drawing.Size(32, 16);
             this.linkLabel1.TabIndex = 22;
             this.linkLabel1.TabStop = true;
-            this.linkLabel1.Text = "Discord Application Portal";
+            this.linkLabel1.Text = "Help";
             this.linkLabel1.VisitedLinkColor = System.Drawing.Color.FromArgb(((int)(((byte)(78)))), ((int)(((byte)(93)))), ((int)(((byte)(148)))));
             this.linkLabel1.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabel1_LinkClicked);
             // 
