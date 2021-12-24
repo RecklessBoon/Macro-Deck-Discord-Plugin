@@ -53,7 +53,7 @@ namespace RecklessBoon.MacroDeck.Discord.RPC
         public event EventHandler<VoiceStateResponse> OnVoiceStateCreate;
         public event EventHandler<VoiceStateResponse> OnVoiceStateUpdate;
         public event EventHandler<VoiceStateResponse> OnVoiceStateDelete;
-        public event EventHandler<Payload> OnVoiceSettingsUpdate;
+        public event EventHandler<VoiceSettingsResponse> OnVoiceSettingsUpdate;
         public event EventHandler<Payload> OnVoiceConnectionStatus;
         public event EventHandler<Payload> OnSpeakingStart;
         public event EventHandler<Payload> OnSpeakingStop;
@@ -109,6 +109,7 @@ namespace RecklessBoon.MacroDeck.Discord.RPC
             {
                 OnDispatch += RouteEvent;
                 _ = Subscribe("VOICE_CHANNEL_SELECT");
+                _ = Subscribe("VOICE_SETTINGS_UPDATE");
                 OnVoiceChannelSelect += Client_OnVoiceChannelSelect;
 
                 await InitCurrentVoiceChannel();
@@ -430,7 +431,7 @@ namespace RecklessBoon.MacroDeck.Discord.RPC
                         OnVoiceStateDelete?.Invoke(this, payload.Data.ToObject<VoiceStateResponse>());
                         break;
                     case "VOICE_SETTINGS_UPDATE":
-                        OnVoiceSettingsUpdate?.Invoke(this, payload);
+                        OnVoiceSettingsUpdate?.Invoke(this, payload.Data.ToObject<VoiceSettingsResponse>());
                         break;
                     case "VOICE_CONNECTION_STATUS":
                         OnVoiceConnectionStatus?.Invoke(this, payload);

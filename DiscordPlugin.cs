@@ -13,7 +13,10 @@ namespace RecklessBoon.MacroDeck.Discord
     public static class PluginInstance
     {
         public static DiscordPlugin Plugin;
-        public static StateCache cache = new StateCache();
+        public static StateCache cache = new StateCache()
+        {
+            VoiceState = new VoiceState()
+        };
     }
 
     public class DiscordPlugin : MacroDeckPlugin
@@ -116,8 +119,19 @@ namespace RecklessBoon.MacroDeck.Discord
 
         protected void ConnectClients()
         {
-            RPCClient.OnVoiceStateCreate += Client_OnVoiceStateCreate;
             RPCClient.OnVoiceStateUpdate += Client_OnVoiceStateUpdate;
+            RPCClient.OnVoiceSettingsUpdate += Client_OnVoiceSettingsUpdate;
+        }
+
+        private void Client_OnVoiceSettingsUpdate(object sender, VoiceSettingsResponse payload)
+        {
+            if (PluginInstance.cache.CurrentVoiceChannelID == null)
+            {
+                var currentVoiceState = PluginInstance.cache.VoiceState;
+                currentVoiceState.SelfMute = payload.IsMute;
+                currentVoiceState.SelfDeaf = payload.IsDeaf;
+                UpdateVoiceStateVariables(currentVoiceState);
+            }
         }
 
         protected void ResetVariables()
@@ -130,11 +144,6 @@ namespace RecklessBoon.MacroDeck.Discord
                 new VariableState { Name = "is_any_muted" },
                 new VariableState { Name = "is_any_deafened" }
             });
-        }
-
-        protected void Client_OnVoiceStateCreate(object sender, VoiceStateResponse payload)
-        {
-            UpdateVoiceStateVariables(payload.VoiceState);
         }
 
         protected void Client_OnVoiceStateUpdate(object sender, VoiceStateResponse payload)
