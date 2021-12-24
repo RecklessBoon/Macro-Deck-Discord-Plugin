@@ -73,10 +73,12 @@ To create your own Discord application:
 2. Click the "New Application" button in the top right corner
 3. Name the application (You can just use "Macro Deck Plugin" or anything really, 
 it's yours)
-4. On the OAuth2 page, note the Client Id and the Client Secret.
+4. On the OAuth2 page, add a Redirect of "https://127.0.0.1"
+   - Note the Client Id and the Client Secret on this page
    - You will enter these in the Macro Deck plugin configuration screen shortly
    - The Public Key **IS NOT** the same as the Client Secret. Make sure you copy 
      the right one.
+
 
 ### Macro Deck 2
 1. Open Macro Deck 2 application on your computer
