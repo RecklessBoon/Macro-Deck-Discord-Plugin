@@ -2,10 +2,15 @@
 using RecklessBoon.MacroDeck.Discord.RPC;
 using RecklessBoon.MacroDeck.Discord.RPC.Model;
 using RecklessBoon.MacroDeck.Discord.RPC.Model.Responses;
+using SuchByte.MacroDeck.GUI;
+using SuchByte.MacroDeck.GUI.CustomControls;
 using SuchByte.MacroDeck.Plugins;
 using SuchByte.MacroDeck.Variables;
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace RecklessBoon.MacroDeck.Discord
 {
@@ -34,6 +39,14 @@ namespace RecklessBoon.MacroDeck.Discord
 
         protected RPCClient _RPCClient;
         public RPCClient RPCClient { get { return _RPCClient; } }
+
+        private ContentSelectorButton statusButton = new ContentSelectorButton();
+        private ToolTip statusToolTip = new ToolTip();
+
+        private MainWindow mainWindow;
+
+        private Task connectingStatusLoop;
+        private CancellationTokenSource connectingStatusLoopCTS;
 
         public class VariableState
         {
@@ -85,6 +98,7 @@ namespace RecklessBoon.MacroDeck.Discord
         public DiscordPlugin()
         {
             PluginInstance.Plugin ??= this;
+            SuchByte.MacroDeck.MacroDeck.OnMainWindowLoad += MacroDeck_OnMainWindowLoad;
         }
 
         // Gets called when the plugin is loaded
@@ -107,6 +121,49 @@ namespace RecklessBoon.MacroDeck.Discord
             };
         }
 
+        private void MacroDeck_OnMainWindowLoad(object sender, EventArgs e)
+        {
+            mainWindow = sender as MainWindow;
+            statusButton = new ContentSelectorButton();
+            UpdateStatusButton(RPCClient != null && RPCClient.IsConnected);
+            statusButton.Click += StatusButton_Click;
+            mainWindow.contentButtonPanel.Controls.Add(statusButton);
+        }
+
+        private void StatusButton_Click(object sender, EventArgs e)
+        {
+            if (configuration == null || !configuration.IsFullySet)
+            {
+                OpenConfigurator();
+            }
+            else
+            {
+                Task.Run(() =>
+                {
+                    if (RPCClient != null && !RPCClient.IsDisposed)
+                    {
+                        RPCClient.Dispose();
+                    } else if (RPCClient == null || RPCClient.IsDisposed || !RPCClient.IsConnected)
+                    {
+                        InitClient();
+                    }
+                });
+            }
+        }
+
+        private void UpdateStatusButton(bool connected)
+        {
+            if (mainWindow != null)
+            {
+                mainWindow.BeginInvoke(new Action(() =>
+                {
+                    statusButton.BackgroundImage = connected ? Properties.Resources.Discord_Logo_Color_64x49 : Properties.Resources.Discord_Logo_White_64x49;
+                    statusButton.BackgroundImageLayout = ImageLayout.Zoom;
+                    statusToolTip.SetToolTip(statusButton, "Discord " + (connected ? " Connected" : "Disconnected"));
+                }));
+            }
+        }
+
         protected void InitClient()
         {
             if ((RPCClient == null || RPCClient.IsDisposed) && !String.IsNullOrEmpty(PluginInstance.Plugin.configuration.ClientId))
@@ -119,8 +176,60 @@ namespace RecklessBoon.MacroDeck.Discord
 
         protected void ConnectClients()
         {
+            RPCClient.OnConnectBegin += Client_OnConnectBegin;
+            RPCClient.OnConnectEnd += Client_OnConnectEnd;
+            RPCClient.OnConnectStateChanged += Client_OnConnectStateChanged;
             RPCClient.OnVoiceStateUpdate += Client_OnVoiceStateUpdate;
             RPCClient.OnVoiceSettingsUpdate += Client_OnVoiceSettingsUpdate;
+        }
+
+        private void CancelConnectingStatusLoop()
+        {
+            if (connectingStatusLoopCTS != null)
+            {
+                connectingStatusLoopCTS.Cancel();
+            }
+        }
+
+        private async void Client_OnConnectBegin(object sender, EventArgs e)
+        {
+            CancelConnectingStatusLoop();
+
+            if (connectingStatusLoop == null || connectingStatusLoop.Status != TaskStatus.Running)
+            {
+                connectingStatusLoopCTS = new CancellationTokenSource();
+                CancellationToken ct = connectingStatusLoopCTS.Token;
+
+                connectingStatusLoop = Task.Run(() =>
+                {
+                    do
+                    {
+                        if (connectingStatusLoopCTS.IsCancellationRequested) return;
+
+                        UpdateStatusButton(true);
+                        Thread.Sleep(750);
+                        UpdateStatusButton(false);
+                        Thread.Sleep(750);
+                    } while (!connectingStatusLoopCTS.IsCancellationRequested);
+                }, ct);
+
+                await connectingStatusLoop;
+                UpdateStatusButton(RPCClient != null && RPCClient.IsConnected);
+            }
+        }
+
+        private void Client_OnConnectStateChanged(object sender, bool connected)
+        {
+            UpdateStatusButton(connected);
+        }
+
+        private void Client_OnConnectEnd(object sender, EventArgs e)
+        {
+            if (!RPCClient.IsConnected)
+            {
+                _RPCClient = null;
+            }
+            CancelConnectingStatusLoop();
         }
 
         protected void ResetVariables()

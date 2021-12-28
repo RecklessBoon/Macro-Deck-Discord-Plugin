@@ -15,7 +15,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Resources\Discord-Logo-Color.png" />
     <None Remove="Resources\PluginIcon.png" />
   </ItemGroup>
 
@@ -55,7 +54,7 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy /Y &quot;$(TargetDir)$(TargetName).dll&quot; &quot;%25AppData%25\Macro Deck\plugins\RecklessBoon.MacroDeck.Discord\$(TargetName).dll&quot;" />
+    <Exec Command="copy /Y &quot;$(TargetDir)$(TargetName).dll&quot; &quot;%25AppData%25\Macro Deck\plugins\RecklessBoon.DiscordPlugin\$(TargetName).dll&quot;" />
   </Target>
 
 </Project>

@@ -63,6 +63,36 @@ namespace RecklessBoon.MacroDeck.Discord.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap Discord_Logo_Black_64x49 {
+            get {
+                object obj = ResourceManager.GetObject("Discord_Logo_Black_64x49", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Discord_Logo_Color_64x49 {
+            get {
+                object obj = ResourceManager.GetObject("Discord_Logo_Color_64x49", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Discord_Logo_White_64x49 {
+            get {
+                object obj = ResourceManager.GetObject("Discord_Logo_White_64x49", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap DiscordIcon {
             get {
                 object obj = ResourceManager.GetObject("DiscordIcon", resourceCulture);

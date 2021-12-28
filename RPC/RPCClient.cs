@@ -12,6 +12,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Security.Cryptography;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RecklessBoon.MacroDeck.Discord.RPC
@@ -24,25 +25,14 @@ namespace RecklessBoon.MacroDeck.Discord.RPC
         public readonly static string[] SCOPES_REQUIRED = new string[]
         {
             "identify",
-            //"email",
-            //"connections",
-            //"guilds",
-            //"guilds.join",
-            //"guilds.members.read",
-            //"gdm.join",
             "rpc",
-            //"rpc.notifications.read",
-            //"rpc.voice.read",
-            //"rpc.voice.write",
-            //"rpc.activities.write",
-            //"webhook.incoming",
-            //"activities.read",
-            //"activities.write",
-            //"relationshiops.read"
         };
 
+        public event EventHandler OnConnectBegin;
+        public event EventHandler OnConnectEnd;
+        public event EventHandler<bool> OnConnectStateChanged;
         public event EventHandler<AuthToken> OnLoginComplete;
-
+        
         public event EventHandler<Payload> OnDispatch;
         public event EventHandler<Payload> OnReady;
         public event EventHandler<Payload> OnError;
@@ -70,8 +60,17 @@ namespace RecklessBoon.MacroDeck.Discord.RPC
         protected ILogger _logger;
         protected PipeClient _pipe;
         protected DiscordRpcClient _client;
+        protected bool _connectStarted = false;
         protected bool _connected = false;
-        public bool IsConnected { get { return _connected; } }
+        public bool IsConnected { 
+            get { return _connected; } 
+            protected set 
+            {
+                _connectStarted = false;
+                _connected = value;
+                OnConnectStateChanged?.Invoke(this, value);
+            } 
+        }
         protected bool _disposed = false;
         public bool IsDisposed { get { return _disposed; } }
 
@@ -85,16 +84,29 @@ namespace RecklessBoon.MacroDeck.Discord.RPC
 
         public void Dispose()
         {
-            _pipe?.Dispose();
-            _client?.Dispose();
+            if (_connectStarted)
+            {
+                OnConnectEnd?.Invoke(this, EventArgs.Empty);
+            }
+            IsConnected = false;
+            if (_pipe != null && _pipe.IsConnected)
+            {
+                _pipe.Dispose();
+            }
+            if (_client != null && _client.IsInitialized)
+            {
+                _client.Dispose();
+            }
             _disposed = true;
         }
 
         public bool Start()
         {
+            OnConnectBegin?.Invoke(this, EventArgs.Empty);
+            _connectStarted = true;
             var config = PluginInstance.Plugin.configuration;
-            if (String.IsNullOrEmpty(config.ClientId) || String.IsNullOrEmpty(config.ClientSecret))
-                return false;
+            // If we don't have a config, you don't have a client.
+            if (!config.IsFullySet) return false;
 
             _client.OnReady += LoginClient;
             _client.Initialize();
@@ -107,12 +119,16 @@ namespace RecklessBoon.MacroDeck.Discord.RPC
 
             OnLoginComplete += async (object sender, AuthToken args) =>
             {
-                OnDispatch += RouteEvent;
-                _ = Subscribe("VOICE_CHANNEL_SELECT");
-                _ = Subscribe("VOICE_SETTINGS_UPDATE");
-                OnVoiceChannelSelect += Client_OnVoiceChannelSelect;
+                if (IsConnected == true)
+                {
+                    OnDispatch += RouteEvent;
+                    await InitCurrentVoiceChannel();
+                    _ = Subscribe("VOICE_CHANNEL_SELECT");
+                    _ = Subscribe("VOICE_SETTINGS_UPDATE");
+                    OnVoiceChannelSelect += Client_OnVoiceChannelSelect;
+                }
 
-                await InitCurrentVoiceChannel();
+                OnConnectEnd?.Invoke(this, EventArgs.Empty);
             };
 
             return true;
@@ -122,10 +138,9 @@ namespace RecklessBoon.MacroDeck.Discord.RPC
         {
             var payload = await Command("GET_SELECTED_VOICE_CHANNEL");
 
-            if (payload.Data != null)
+            if (payload != null && payload.Data != null)
             {
                 await SetCurrentChannel(payload.Data);
-                _logger?.Info("\nCurrent Selected Voice Channel Response:\n{0}", JsonConvert.SerializeObject(payload));
             }
         }
 
@@ -187,7 +202,7 @@ namespace RecklessBoon.MacroDeck.Discord.RPC
 
         protected async void LoginClient(object sender, DiscordRPC.Message.ReadyMessage args)
         {
-            if (!_connected)
+            if (!IsConnected)
             {
                 AuthToken token = await GetCurrentToken();
 
@@ -196,17 +211,26 @@ namespace RecklessBoon.MacroDeck.Discord.RPC
                     token = await GetNewToken();
                     CredentialsHelper.UpsertCredential("auth_token", token);
                 }
-                var response = await Authenticate(token.Token);
-                if (response == null)
+                if (token != null)
                 {
-                    CredentialsHelper.RemoveCredential("auth_token");
-                    token = await GetNewToken();
-                    CredentialsHelper.UpsertCredential("auth_token", token);
-                    response = await Authenticate(token.Token);
+                    var response = await Authenticate(token.Token);
+                    if (response == null)
+                    {
+                        CredentialsHelper.RemoveCredential("auth_token");
+                        token = await GetNewToken();
+                        if (token != null)
+                        {
+                            CredentialsHelper.UpsertCredential("auth_token", token);
+                            response = await Authenticate(token.Token);
+                        }
+                    }
+                    if (response != null)
+                    {
+                        PluginInstance.cache.CurrentUser = response.User;
+                        IsConnected = true;
+                    }
                 }
-                PluginInstance.cache.CurrentUser = response.User;
                 OnLoginComplete?.Invoke(sender, token);
-                _connected = true;
             }
         }
 
@@ -236,8 +260,19 @@ namespace RecklessBoon.MacroDeck.Discord.RPC
 
         protected async Task<AuthToken> GetNewToken()
         {
-            var code = await Authorize();
+            string code;
+            try
+            {
+                code = await Authorize();
+            } catch (AuthRejectedException ex)
+            {
+                _logger?.Trace(ex.ToString());
+                return null;
+            }
+
             var tokenResponse = await SwapForToken(code);
+            if (tokenResponse == null) return null;
+
             var token = AuthTokenHelper.CreateFrom(SCOPES_REQUIRED, tokenResponse);
             return token;
         }
@@ -246,11 +281,9 @@ namespace RecklessBoon.MacroDeck.Discord.RPC
         {
             var tokenResponse = await RefreshToken(oldToken);
 
-            if (tokenResponse == null)
-                return null;
+            if (tokenResponse == null) return null;
 
             var token = AuthTokenHelper.CreateFrom(SCOPES_REQUIRED, tokenResponse);
-
             return token;
         }
 
@@ -274,8 +307,13 @@ namespace RecklessBoon.MacroDeck.Discord.RPC
                 client_id = PluginInstance.Plugin.configuration.ClientId
             });
 
-            _logger?.Info("\nAuthorize Response:\n{0}", JsonConvert.SerializeObject(payload));
+            if (payload == null) return null;
+
             var auth_response = payload.Data.ToObject<AuthorizeResponse>();
+            if (payload.Evt == "ERROR" && auth_response.Code == "5000")
+            {
+                throw new AuthRejectedException("User rejected authorization");
+            }
 
             return auth_response.Code;
         }
@@ -295,7 +333,15 @@ namespace RecklessBoon.MacroDeck.Discord.RPC
                     })
             };
             var http_response = await http.SendAsync(http_request);
-            http_response.EnsureSuccessStatusCode();
+            try
+            {
+                http_response.EnsureSuccessStatusCode();
+            }
+            catch (Exception ex)
+            {
+                _logger?.Error(String.Format("Failed to swap grant code for authentication token:\n{0}", ex.ToString()));
+                return null;
+            }
 
             var content = await http_response.Content.ReadAsStringAsync();
             _logger?.Info("\nToken Swap Response:\n{0}", content);
@@ -331,7 +377,7 @@ namespace RecklessBoon.MacroDeck.Discord.RPC
             }
             catch (Exception ex)
             {
-                _logger?.Trace("\nToken Refresh Response Failed:\n{0}", ex.Message);
+                _logger?.Error("\nToken Refresh Response Failed:\n{0}", ex.Message);
             }
             return json_response;
         }
@@ -343,7 +389,8 @@ namespace RecklessBoon.MacroDeck.Discord.RPC
                 access_token = token
             });
 
-            _logger?.Info("\nAuthenticate Response:\n{0}", JsonConvert.SerializeObject(payload));
+            if (payload == null) return null;
+
             var auth_response = payload.Data.ToObject<AuthenticateResponse>();
             if (auth_response.User == null || auth_response.Expires == null || auth_response.Application == null || auth_response.Scopes == null)
             {
@@ -353,54 +400,76 @@ namespace RecklessBoon.MacroDeck.Discord.RPC
             return auth_response;
         }
 
-        protected async Task Subscribe(string evt, object args = null)
+        protected async Task<Payload> Subscribe(string evt, object args = null)
         {
-            var payload = await Command("SUBSCRIBE", args, evt);
-            _logger?.Info("\nSubscribe Response:\n{0}", JsonConvert.SerializeObject(payload));
+            return await Command("SUBSCRIBE", args, evt);
         }
 
-        protected async Task Unsubscribe(string evt, object args = null)
+        protected async Task<Payload> Unsubscribe(string evt, object args = null)
         {
-            var payload = await Command("UNSUBSCRIBE", args, evt);
-            _logger?.Info("\nUnsubscribe Response:\n{0}", JsonConvert.SerializeObject(payload));
+            return await Command("UNSUBSCRIBE", args, evt);
         }
 
         public async Task<Payload> Command(string command, object args = null, string evt = null)
         {
-
-            var nonce = GenerateNonce();
-            Payload payload = null;
-            TaskCompletionSource<Payload> tcs = new TaskCompletionSource<Payload>();
-            EventHandler<PipeFrame> handler = (sender, frame) =>
+            try
             {
-                payload = JsonConvert.DeserializeObject<Payload>(frame.Message);
-                if (payload.Nonce == nonce)
+                var nonce = GenerateNonce();
+                Payload payload = null;
+                TaskCompletionSource<Payload> tcs = new TaskCompletionSource<Payload>();
+                EventHandler<PipeFrame> handler = (sender, frame) =>
                 {
-                    _logger?.Info("\nCommand Response:\n{0}", JsonConvert.SerializeObject(payload));
-                    tcs.SetResult(payload);
+                    payload = JsonConvert.DeserializeObject<Payload>(frame.Message);
+                    if (payload.Nonce == nonce)
+                    {
+                        tcs.SetResult(payload);
+                    }
+                };
+
+                _pipe.FrameRead += handler;
+
+                var request = new
+                {
+                    nonce,
+                    cmd = command,
+                    evt = evt ?? "",
+                    args = args ?? ""
+                };
+                _logger?.Info("\nCommand Request:\n{0}", JsonConvert.SerializeObject(request));
+                var written = _pipe.WriteFrame(new PipeFrame(Opcode.Frame, request));
+
+                if (written)
+                {
+                    _ = Task.Run(() =>
+                      {
+                          Thread.Sleep(10000);
+                          if (tcs.Task.Status == TaskStatus.Running)
+                          {
+                              tcs.SetResult(null);
+                          }
+                      });
+                    await tcs.Task;
+                } else
+                {
+                    _logger?.Error("Failed to write frame");
+                    tcs.SetCanceled();
                 }
-            };
 
-            _pipe.FrameRead += handler;
-
-            _pipe.WriteFrame(new PipeFrame(Opcode.Frame, new
+                _pipe.FrameRead -= handler;
+                return tcs.Task.Result;
+            }
+            catch (Exception ex)
             {
-                nonce,
-                cmd = command,
-                evt,
-                args
-            }));
-
-            await tcs.Task;
-            _pipe.FrameRead -= handler;
-            return tcs.Task.Result;
+                _logger?.Error(String.Format("Command failed:\n{0}", ex.ToString()));
+                return null;
+            }
         }
 
         protected void RouteEvent(object sender, Payload payload)
         {
             try
             {
-                _logger?.Info("\nOnDispatch:\n{0}", JsonConvert.SerializeObject(payload));
+                _logger?.Info("\nDispatch Response:\n{0}", JsonConvert.SerializeObject(payload));
                 switch (payload.Evt)
                 {
                     case "READY":

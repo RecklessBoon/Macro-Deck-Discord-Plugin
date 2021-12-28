@@ -26,6 +26,14 @@ namespace RecklessBoon.MacroDeck.Discord
             }
         }
 
+        public bool IsFullySet
+        {
+            get
+            {
+                return ClientId != null && ClientSecret != null;
+            }
+        }
+
         public void Save()
         {
             SaveCredentials();
