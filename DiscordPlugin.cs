@@ -8,6 +8,7 @@ using SuchByte.MacroDeck.Plugins;
 using SuchByte.MacroDeck.Variables;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -125,6 +126,7 @@ namespace RecklessBoon.MacroDeck.Discord
         {
             mainWindow = sender as MainWindow;
             statusButton = new ContentSelectorButton();
+            statusButton.BackgroundImageLayout = ImageLayout.Zoom;
             UpdateStatusButton(RPCClient != null && RPCClient.IsConnected);
             statusButton.Click += StatusButton_Click;
             mainWindow.contentButtonPanel.Controls.Add(statusButton);
@@ -151,14 +153,46 @@ namespace RecklessBoon.MacroDeck.Discord
             }
         }
 
+        /**
+         * Pad a bitmap with default padding
+         */
+        private Bitmap PadBitmap(Bitmap bm)
+        {
+            return PadBitmap(bm, 1.3f, 1.3f);
+        }
+
+        /**
+         * Pad a bitmap with equal percentage on x and y axis
+         */
+        private Bitmap PadBitmap(Bitmap bm, float padding)
+        {
+            return PadBitmap(bm, padding, padding);
+        }
+
+        /**
+         * Pad a bitmap with explicit percentage on x and y axis
+         */
+        private Bitmap PadBitmap(Bitmap bm, float xPadding, float yPadding)
+        {
+            Bitmap paddedBm = new Bitmap((int)(bm.Width * xPadding), (int)(bm.Height * yPadding));
+            using (Graphics graphics = Graphics.FromImage(paddedBm))
+            {
+                graphics.Clear(Color.Transparent);
+                int x = (paddedBm.Width - bm.Width) / 2;
+                int y = (paddedBm.Height - bm.Height) / 2;
+                graphics.DrawImage(bm, x, y, bm.Width, bm.Height);
+            }
+            return paddedBm;
+        }
+
         private void UpdateStatusButton(bool connected)
         {
             if (mainWindow != null)
             {
                 mainWindow.BeginInvoke(new Action(() =>
                 {
-                    statusButton.BackgroundImage = connected ? Properties.Resources.Discord_Logo_Color_64x49 : Properties.Resources.Discord_Logo_White_64x49;
-                    statusButton.BackgroundImageLayout = ImageLayout.Zoom;
+                    Bitmap bm = connected ? Properties.Resources.Discord_Logo_Color_64x49 : Properties.Resources.Discord_Logo_White_64x49;
+                    statusButton.BackgroundImage = PadBitmap(bm, 1.35f);
                     statusToolTip.SetToolTip(statusButton, "Discord " + (connected ? " Connected" : "Disconnected"));
                 }));
             }
