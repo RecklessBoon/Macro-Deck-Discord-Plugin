@@ -4,7 +4,7 @@
 	<TargetFramework>netcoreapp3.1</TargetFramework>
 	<RootNamespace>RecklessBoon.MacroDeck.Discord</RootNamespace>
 	<UseWindowsForms>true</UseWindowsForms>
-    <Version>1.1.1</Version>
+    <Version>1.1.2</Version>
 	<RepositoryUrl>https://github.com/RecklessBoon/Macro-Deck-Discord-Plugin</RepositoryUrl>
     <Authors>RecklessBoon</Authors>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
