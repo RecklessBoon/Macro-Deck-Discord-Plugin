@@ -259,7 +259,7 @@ namespace RecklessBoon.MacroDeck.Discord
 
         private void Client_OnConnectEnd(object sender, EventArgs e)
         {
-            if (!RPCClient.IsConnected)
+            if (RPCClient != null && !RPCClient.IsConnected)
             {
                 _RPCClient = null;
             }
