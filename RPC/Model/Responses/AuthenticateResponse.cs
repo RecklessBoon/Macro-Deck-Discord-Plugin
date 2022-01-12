@@ -4,16 +4,16 @@ namespace RecklessBoon.MacroDeck.Discord.RPC.Model.Responses
 {
     public class AuthenticateResponse
     {
-        [JsonProperty("user")]
+        [JsonProperty("user", NullValueHandling = NullValueHandling.Ignore)]
         public User User { get; set; }
 
-        [JsonProperty("scopes")]
+        [JsonProperty("scopes", NullValueHandling = NullValueHandling.Ignore)]
         public string[] Scopes { get; set; }
 
-        [JsonProperty("expires")]
+        [JsonProperty("expires", NullValueHandling = NullValueHandling.Ignore)]
         public string Expires { get; set; }
 
-        [JsonProperty("application")]
+        [JsonProperty("application", NullValueHandling = NullValueHandling.Ignore)]
         public object Application { get; set; }
     }
 }

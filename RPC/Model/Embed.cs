@@ -4,43 +4,43 @@ namespace RecklessBoon.MacroDeck.Discord.RPC.Model
 {
     public class Embed
     {
-        [JsonProperty("title")]
+        [JsonProperty("title", NullValueHandling = NullValueHandling.Ignore)]
         public string Title { get; set; }
 
-        [JsonProperty("type")]
+        [JsonProperty("type", NullValueHandling = NullValueHandling.Ignore)]
         public string Type { get; set; }
 
-        [JsonProperty("description")]
+        [JsonProperty("description", NullValueHandling = NullValueHandling.Ignore)]
         public string Description { get; set; }
 
-        [JsonProperty("url")]
+        [JsonProperty("url", NullValueHandling = NullValueHandling.Ignore)]
         public string Url { get; set; }
 
-        [JsonProperty("timestamp")]
+        [JsonProperty("timestamp", NullValueHandling = NullValueHandling.Ignore)]
         public string Timestamp { get; set; }
 
-        [JsonProperty("color")]
+        [JsonProperty("color", NullValueHandling = NullValueHandling.Ignore)]
         public int Color { get; set; }
 
-        [JsonProperty("footer")]
+        [JsonProperty("footer", NullValueHandling = NullValueHandling.Ignore)]
         public EmbedFooter Footer { get; set; }
 
-        [JsonProperty("image")]
+        [JsonProperty("image", NullValueHandling = NullValueHandling.Ignore)]
         public EmbedImage Image { get; set; }
 
-        [JsonProperty("thumbnail")]
+        [JsonProperty("thumbnail", NullValueHandling = NullValueHandling.Ignore)]
         public EmbedThumbnail Thumbnail { get; set; }
 
-        [JsonProperty("video")]
+        [JsonProperty("video", NullValueHandling = NullValueHandling.Ignore)]
         public EmbedVideo Video { get; set; }
 
-        [JsonProperty("provider")]
+        [JsonProperty("provider", NullValueHandling = NullValueHandling.Ignore)]
         public EmbedProvider Provider { get; set; }
 
-        [JsonProperty("author")]
+        [JsonProperty("author", NullValueHandling = NullValueHandling.Ignore)]
         public EmbedAuthor Author { get; set; }
 
-        [JsonProperty("fields")]
+        [JsonProperty("fields", NullValueHandling = NullValueHandling.Ignore)]
         public EmbedField[] Fields { get; set; }
     }
 }

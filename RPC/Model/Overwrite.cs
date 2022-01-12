@@ -4,16 +4,16 @@ namespace RecklessBoon.MacroDeck.Discord.RPC.Model
 {
     public class Overwrite
     {
-        [JsonProperty("id")]
+        [JsonProperty("id", NullValueHandling = NullValueHandling.Ignore)]
         public ulong Id { get; set; }
 
-        [JsonProperty("type")]
+        [JsonProperty("type", NullValueHandling = NullValueHandling.Ignore)]
         public int Type { get; set; }
 
-        [JsonProperty("allow")]
+        [JsonProperty("allow", NullValueHandling = NullValueHandling.Ignore)]
         public string Allow { get; set; }
 
-        [JsonProperty("deny")]
+        [JsonProperty("deny", NullValueHandling = NullValueHandling.Ignore)]
         public string Deny { get; set; }
     }
 }

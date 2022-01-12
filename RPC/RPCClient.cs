@@ -26,6 +26,7 @@ namespace RecklessBoon.MacroDeck.Discord.RPC
         {
             "identify",
             "rpc",
+            "rpc.activities.write",
         };
 
         public event EventHandler OnConnectBegin;
@@ -60,6 +61,13 @@ namespace RecklessBoon.MacroDeck.Discord.RPC
         protected ILogger _logger;
         protected PipeClient _pipe;
         protected DiscordRpcClient _client;
+        public DiscordRpcClient BaseClient
+        {
+            get
+            {
+                return _client;
+            }
+        }
         protected bool _connectStarted = false;
         protected bool _connected = false;
         public bool IsConnected { 
@@ -78,7 +86,7 @@ namespace RecklessBoon.MacroDeck.Discord.RPC
         {
             ApplicationID = applicationId;
             _pipe = new PipeClient();
-            _logger = Debugger.IsAttached && Debugger.IsLogging() ? new DebugLogger() : null;
+            _logger = PluginInstance.Logger;
             _client = new DiscordRpcClient(applicationID: ApplicationID, client: _pipe, logger: _logger);
         }
 

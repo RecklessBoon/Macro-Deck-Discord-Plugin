@@ -1,11 +1,14 @@
 ﻿using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace RecklessBoon.MacroDeck.Discord.RPC.Model
 {
-    public class EmbedProvider
+    public class Button
     {
-        [JsonProperty("name", NullValueHandling = NullValueHandling.Ignore)]
-        public string Name { get; set; }
+        [JsonProperty("label", NullValueHandling = NullValueHandling.Ignore)]
+        public string Label { get; set; }
 
         [JsonProperty("url", NullValueHandling = NullValueHandling.Ignore)]
         public string Url { get; set; }

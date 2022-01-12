@@ -1,4 +1,6 @@
-﻿using RecklessBoon.MacroDeck.Discord.Actions;
+﻿using DiscordRPC.Logging;
+using Newtonsoft.Json;
+using RecklessBoon.MacroDeck.Discord.Actions;
 using RecklessBoon.MacroDeck.Discord.RPC;
 using RecklessBoon.MacroDeck.Discord.RPC.Model;
 using RecklessBoon.MacroDeck.Discord.RPC.Model.Responses;
@@ -8,6 +10,7 @@ using SuchByte.MacroDeck.Plugins;
 using SuchByte.MacroDeck.Variables;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,6 +21,7 @@ namespace RecklessBoon.MacroDeck.Discord
 
     public static class PluginInstance
     {
+        public static ILogger Logger = Debugger.IsAttached && Debugger.IsLogging() ? new DebugLogger() : null;
         public static DiscordPlugin Plugin;
         public static StateCache cache = new StateCache()
         {
@@ -119,6 +123,8 @@ namespace RecklessBoon.MacroDeck.Discord
                 new SetDeafenOnAction(),
                 new SetDeafenOffAction(),
                 new ToggleDeafenAction(),
+                new SetRichPresenceAction(),
+                new ClearRichPresenceAction(),
             };
         }
 

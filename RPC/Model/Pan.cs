@@ -4,10 +4,10 @@ namespace RecklessBoon.MacroDeck.Discord.RPC.Model
 {
     public class Pan
     {
-        [JsonProperty("left")]
+        [JsonProperty("left", NullValueHandling = NullValueHandling.Ignore)]
         public double Left { get; set; }
 
-        [JsonProperty("right")]
+        [JsonProperty("right", NullValueHandling = NullValueHandling.Ignore)]
         public double Right { get; set; }
 
     }

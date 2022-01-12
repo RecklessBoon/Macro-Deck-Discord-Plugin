@@ -4,40 +4,40 @@ namespace RecklessBoon.MacroDeck.Discord.RPC.Model
 {
     public class Component
     {
-        [JsonProperty("type")]
+        [JsonProperty("type", NullValueHandling = NullValueHandling.Ignore)]
         public int Type { get; set; }
 
-        [JsonProperty("custom_id")]
+        [JsonProperty("custom_id", NullValueHandling = NullValueHandling.Ignore)]
         public string CustomId { get; set; }
 
-        [JsonProperty("disabled")]
+        [JsonProperty("disabled", NullValueHandling = NullValueHandling.Ignore)]
         public bool Disabled { get; set; }
 
-        [JsonProperty("style")]
+        [JsonProperty("style", NullValueHandling = NullValueHandling.Ignore)]
         public int Style { get; set; }
 
-        [JsonProperty("label")]
+        [JsonProperty("label", NullValueHandling = NullValueHandling.Ignore)]
         public string Label { get; set; }
 
-        [JsonProperty("emoji")]
+        [JsonProperty("emoji", NullValueHandling = NullValueHandling.Ignore)]
         public Emoji Emoji { get; set; }
 
-        [JsonProperty("url")]
+        [JsonProperty("url", NullValueHandling = NullValueHandling.Ignore)]
         public string Url { get; set; }
 
-        [JsonProperty("options")]
+        [JsonProperty("options", NullValueHandling = NullValueHandling.Ignore)]
         public SelectOption[] Options { get; set; }
 
-        [JsonProperty("placeholder")]
+        [JsonProperty("placeholder", NullValueHandling = NullValueHandling.Ignore)]
         public string Placeholder { get; set; }
 
-        [JsonProperty("min_values")]
+        [JsonProperty("min_values", NullValueHandling = NullValueHandling.Ignore)]
         public int MinValues { get; set; }
 
-        [JsonProperty("max_values")]
+        [JsonProperty("max_values", NullValueHandling = NullValueHandling.Ignore)]
         public int MaxValues { get; set; }
 
-        [JsonProperty("components")]
+        [JsonProperty("components", NullValueHandling = NullValueHandling.Ignore)]
         public Component[] Components { get; set; }
     }
 }

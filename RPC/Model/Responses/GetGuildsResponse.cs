@@ -4,7 +4,7 @@ namespace RecklessBoon.MacroDeck.Discord.RPC.Model.Responses
 {
     public class GetGuildsResponse
     {
-        [JsonProperty("guilds")]
+        [JsonProperty("guilds", NullValueHandling = NullValueHandling.Ignore)]
         public Guild[] Guilds { get; set; }
     }
 }

@@ -4,34 +4,34 @@ namespace RecklessBoon.MacroDeck.Discord.RPC.Model
 {
     public class GuildMember
     {
-        [JsonProperty("user")]
+        [JsonProperty("user", NullValueHandling = NullValueHandling.Ignore)]
         public User User { get; set; }
 
-        [JsonProperty("nick")]
+        [JsonProperty("nick", NullValueHandling = NullValueHandling.Ignore)]
         public string Nickname { get; set; }
 
-        [JsonProperty("avatar")]
+        [JsonProperty("avatar", NullValueHandling = NullValueHandling.Ignore)]
         public string Avatar { get; set; }
 
-        [JsonProperty("roles")]
+        [JsonProperty("roles", NullValueHandling = NullValueHandling.Ignore)]
         public string[] Roles { get; set; }
 
-        [JsonProperty("joined_at")]
+        [JsonProperty("joined_at", NullValueHandling = NullValueHandling.Ignore)]
         public string JoinedAt { get; set; }
 
-        [JsonProperty("premium_since")]
+        [JsonProperty("premium_since", NullValueHandling = NullValueHandling.Ignore)]
         public string PremiumSince { get; set; }
 
-        [JsonProperty("deaf")]
+        [JsonProperty("deaf", NullValueHandling = NullValueHandling.Ignore)]
         public bool IsDeaf { get; set; }
 
-        [JsonProperty("mute")]
+        [JsonProperty("mute", NullValueHandling = NullValueHandling.Ignore)]
         public bool IsMute { get; set; }
 
-        [JsonProperty("pending")]
+        [JsonProperty("pending", NullValueHandling = NullValueHandling.Ignore)]
         public bool IsPending { get; set; }
 
-        [JsonProperty("permissions")]
+        [JsonProperty("permissions", NullValueHandling = NullValueHandling.Ignore)]
         public string[] Permissions { get; set; }
     }
 }
