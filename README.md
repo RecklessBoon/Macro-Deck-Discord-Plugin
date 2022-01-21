@@ -51,6 +51,14 @@ This plugin adds the following actions
 | ------------ | :---------------------------------------- |
 | Execute Webhook | Use a webhook to send a message to a particular channel. <br/>Allows setting:<br/>&nbsp;&nbsp;-&nbsp;Bot name<br/>&nbsp;&nbsp;-&nbsp;Message<br/>&nbsp;&nbsp;-&nbsp;Embedded media (image, vide, etc.) |
 
+#### Rich Presence Actions
+| Action       | Description                               |
+| ------------ | :---------------------------------------- |
+| Set Rich Presence | Set a custom rich presence on your profile <br/><small><i>Note: this shows up in "Activity" on your profile</i></small> |
+| Clear Rich Presence | Erase current custom rich presence (only removes presence set by this plugin) |
+
+<br/>
+
 > **NOTE:** There are currently no actions that can be performed on the server
 > side as there is no bot integration with this. If there is a large demand for
 > bot integration to handle those kinds of actions, that may come at a later date.
