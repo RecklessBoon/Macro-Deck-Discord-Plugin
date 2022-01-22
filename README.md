@@ -54,8 +54,10 @@ This plugin adds the following actions
 #### Rich Presence Actions
 | Action       | Description                               |
 | ------------ | :---------------------------------------- |
-| Set Rich Presence | Set a custom rich presence on your profile <br/><small><i>Note: this shows up in "Activity" on your profile</i></small> |
+| Set Rich Presence | Set a custom rich presence on your profile <br/><br/> <small><b>NOTE:</b> Image keys can only be asset names in your app Rich Presence -> Art Assets page</smalll> |
 | Clear Rich Presence | Erase current custom rich presence (only removes presence set by this plugin) |
+
+<small><i>*Custom rich presence shows up in "Activity" on your profile and in your status if not disallowed</i></small>
 
 <br/>
 
