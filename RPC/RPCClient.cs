@@ -31,6 +31,7 @@ namespace RecklessBoon.MacroDeck.Discord.RPC
 
         public event EventHandler OnConnectBegin;
         public event EventHandler OnConnectEnd;
+        public event EventHandler OnConnectFailed;
         public event EventHandler<bool> OnConnectStateChanged;
         public event EventHandler<AuthToken> OnLoginComplete;
         
@@ -69,6 +70,10 @@ namespace RecklessBoon.MacroDeck.Discord.RPC
             }
         }
         protected bool _connectStarted = false;
+        public bool ConnectStarted
+        {
+            get { return _connectStarted; }
+        }
         protected bool _connected = false;
         public bool IsConnected { 
             get { return _connected; } 
@@ -117,6 +122,12 @@ namespace RecklessBoon.MacroDeck.Discord.RPC
             if (!config.IsFullySet) return false;
 
             _client.OnReady += LoginClient;
+            _client.OnConnectionFailed += (object sender, DiscordRPC.Message.ConnectionFailedMessage args) =>
+            {
+                IsConnected = false;
+                _connectStarted = true;
+                OnConnectFailed?.Invoke(this, EventArgs.Empty);
+            };
             _client.Initialize();
 
             _pipe.FrameRead += (object sender, PipeFrame frame) =>

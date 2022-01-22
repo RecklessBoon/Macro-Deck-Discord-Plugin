@@ -151,11 +151,38 @@ namespace RecklessBoon.MacroDeck.Discord
                     if (RPCClient != null && !RPCClient.IsDisposed)
                     {
                         RPCClient.Dispose();
-                    } else if (RPCClient == null || RPCClient.IsDisposed || !RPCClient.IsConnected)
+                    }
+                    else if (RPCClient == null || RPCClient.IsDisposed || !RPCClient.IsConnected)
                     {
                         InitClient();
                     }
                 });
+            }
+        }
+
+        private async Task StartStatusLoop()
+        {
+            if (connectingStatusLoop == null || connectingStatusLoop.Status != TaskStatus.Running)
+            {
+                connectingStatusLoopCTS = new CancellationTokenSource();
+                CancellationToken ct = connectingStatusLoopCTS.Token;
+
+                connectingStatusLoop = Task.Run(() =>
+                {
+                    do
+                    {
+                        if (connectingStatusLoopCTS.IsCancellationRequested) return;
+                        UpdateStatusButton(true);
+                        Thread.Sleep(750);
+
+                        if (connectingStatusLoopCTS.IsCancellationRequested) return;
+                        UpdateStatusButton(false);
+                        Thread.Sleep(750);
+                    } while ((RPCClient == null || !RPCClient.IsConnected) && !connectingStatusLoopCTS.IsCancellationRequested);
+                }, ct);
+
+                await connectingStatusLoop;
+                UpdateStatusButton(RPCClient != null && RPCClient.IsConnected);
             }
         }
 
@@ -193,7 +220,7 @@ namespace RecklessBoon.MacroDeck.Discord
 
         private void UpdateStatusButton(bool connected)
         {
-            if (mainWindow != null)
+            if (mainWindow != null && mainWindow.IsHandleCreated)
             {
                 mainWindow.BeginInvoke(new Action(() =>
                 {
@@ -218,6 +245,7 @@ namespace RecklessBoon.MacroDeck.Discord
         {
             RPCClient.OnConnectBegin += Client_OnConnectBegin;
             RPCClient.OnConnectEnd += Client_OnConnectEnd;
+            RPCClient.OnConnectFailed += Client_OnConnectFailed;
             RPCClient.OnConnectStateChanged += Client_OnConnectStateChanged;
             RPCClient.OnVoiceStateUpdate += Client_OnVoiceStateUpdate;
             RPCClient.OnVoiceSettingsUpdate += Client_OnVoiceSettingsUpdate;
@@ -231,36 +259,21 @@ namespace RecklessBoon.MacroDeck.Discord
             }
         }
 
-        private async void Client_OnConnectBegin(object sender, EventArgs e)
+        private void Client_OnConnectBegin(object sender, EventArgs e)
         {
-            CancelConnectingStatusLoop();
-
-            if (connectingStatusLoop == null || connectingStatusLoop.Status != TaskStatus.Running)
-            {
-                connectingStatusLoopCTS = new CancellationTokenSource();
-                CancellationToken ct = connectingStatusLoopCTS.Token;
-
-                connectingStatusLoop = Task.Run(() =>
-                {
-                    do
-                    {
-                        if (connectingStatusLoopCTS.IsCancellationRequested) return;
-
-                        UpdateStatusButton(true);
-                        Thread.Sleep(750);
-                        UpdateStatusButton(false);
-                        Thread.Sleep(750);
-                    } while (!connectingStatusLoopCTS.IsCancellationRequested);
-                }, ct);
-
-                await connectingStatusLoop;
-                UpdateStatusButton(RPCClient != null && RPCClient.IsConnected);
-            }
+            _ = StartStatusLoop();
         }
 
         private void Client_OnConnectStateChanged(object sender, bool connected)
         {
             UpdateStatusButton(connected);
+        }
+        private void Client_OnConnectFailed(object sender, EventArgs e)
+        {
+            if (RPCClient != null && !RPCClient.IsConnected && RPCClient.ConnectStarted)
+            {
+                _ = StartStatusLoop();
+            }
         }
 
         private void Client_OnConnectEnd(object sender, EventArgs e)
