@@ -36,6 +36,8 @@ namespace RecklessBoon.MacroDeck.Discord
             this.lblClientSecret = new System.Windows.Forms.Label();
             this.clientSecret = new RecklessBoon.MacroDeck.Discord.UI.PeekablePassword();
             this.linkLabel1 = new System.Windows.Forms.LinkLabel();
+            this.label2 = new System.Windows.Forms.Label();
+            this.logLevel = new SuchByte.MacroDeck.GUI.CustomControls.RoundedComboBox();
             this.SuspendLayout();
             // 
             // label1
@@ -79,7 +81,7 @@ namespace RecklessBoon.MacroDeck.Discord
             this.btnOk.ForeColor = System.Drawing.Color.White;
             this.btnOk.HoverColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(89)))), ((int)(((byte)(184)))));
             this.btnOk.Icon = null;
-            this.btnOk.Location = new System.Drawing.Point(331, 102);
+            this.btnOk.Location = new System.Drawing.Point(331, 129);
             this.btnOk.Name = "btnOk";
             this.btnOk.Progress = 0;
             this.btnOk.ProgressColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(46)))), ((int)(((byte)(94)))));
@@ -115,7 +117,7 @@ namespace RecklessBoon.MacroDeck.Discord
             this.linkLabel1.AutoSize = true;
             this.linkLabel1.DisabledLinkColor = System.Drawing.Color.FromArgb(((int)(((byte)(35)))), ((int)(((byte)(39)))), ((int)(((byte)(42)))));
             this.linkLabel1.LinkColor = System.Drawing.Color.FromArgb(((int)(((byte)(114)))), ((int)(((byte)(137)))), ((int)(((byte)(218)))));
-            this.linkLabel1.Location = new System.Drawing.Point(293, 106);
+            this.linkLabel1.Location = new System.Drawing.Point(293, 133);
             this.linkLabel1.Name = "linkLabel1";
             this.linkLabel1.Size = new System.Drawing.Size(32, 16);
             this.linkLabel1.TabIndex = 22;
@@ -124,11 +126,38 @@ namespace RecklessBoon.MacroDeck.Discord
             this.linkLabel1.VisitedLinkColor = System.Drawing.Color.FromArgb(((int)(((byte)(78)))), ((int)(((byte)(93)))), ((int)(((byte)(148)))));
             this.linkLabel1.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabel1_LinkClicked);
             // 
+            // label2
+            // 
+            this.label2.Font = new System.Drawing.Font("Tahoma", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.label2.Location = new System.Drawing.Point(8, 97);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(97, 29);
+            this.label2.TabIndex = 23;
+            this.label2.Text = "Log Level:";
+            this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // logLevel
+            // 
+            this.logLevel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(65)))), ((int)(((byte)(65)))), ((int)(((byte)(65)))));
+            this.logLevel.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.logLevel.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.logLevel.Font = new System.Drawing.Font("Tahoma", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.logLevel.Icon = null;
+            this.logLevel.Location = new System.Drawing.Point(111, 97);
+            this.logLevel.Name = "logLevel";
+            this.logLevel.Padding = new System.Windows.Forms.Padding(8, 2, 8, 2);
+            this.logLevel.SelectedIndex = -1;
+            this.logLevel.SelectedItem = null;
+            this.logLevel.Size = new System.Drawing.Size(295, 26);
+            this.logLevel.TabIndex = 24;
+            // 
             // ConfigurationForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(415, 142);
+            this.ClientSize = new System.Drawing.Size(415, 168);
+            this.Controls.Add(this.logLevel);
+            this.Controls.Add(this.label2);
             this.Controls.Add(this.linkLabel1);
             this.Controls.Add(this.clientSecret);
             this.Controls.Add(this.label1);
@@ -144,6 +173,8 @@ namespace RecklessBoon.MacroDeck.Discord
             this.Controls.SetChildIndex(this.label1, 0);
             this.Controls.SetChildIndex(this.clientSecret, 0);
             this.Controls.SetChildIndex(this.linkLabel1, 0);
+            this.Controls.SetChildIndex(this.label2, 0);
+            this.Controls.SetChildIndex(this.logLevel, 0);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -157,5 +188,7 @@ namespace RecklessBoon.MacroDeck.Discord
         private System.Windows.Forms.Label lblClientSecret;
         private UI.PeekablePassword clientSecret;
         private System.Windows.Forms.LinkLabel linkLabel1;
+        private System.Windows.Forms.Label label2;
+        private RoundedComboBox logLevel;
     }
 }

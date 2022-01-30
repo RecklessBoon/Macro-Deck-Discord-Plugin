@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using DiscordRPC.Logging;
+using Newtonsoft.Json;
 using SuchByte.MacroDeck.Plugins;
 using System.Linq;
 
@@ -16,6 +17,8 @@ namespace RecklessBoon.MacroDeck.Discord
         [JsonIgnore]
         public string ClientSecret { get; set; }
         public string ClientId { get; set; }
+
+        public LogLevel? LogLevel { get; set; }
 
         public Configuration(DiscordPlugin plugin)
         {
@@ -71,6 +74,7 @@ namespace RecklessBoon.MacroDeck.Discord
                 {
                     var config = JsonConvert.DeserializeObject<Configuration>(json);
                     ClientId = config?.ClientId;
+                    LogLevel = config?.LogLevel;
                 }
                 catch { }
             }

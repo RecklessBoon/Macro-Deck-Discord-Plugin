@@ -1,20 +1,50 @@
-﻿using SuchByte.MacroDeck.GUI.CustomControls;
+﻿using DiscordRPC.Logging;
+using SuchByte.MacroDeck.GUI.CustomControls;
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace RecklessBoon.MacroDeck.Discord
 {
     partial class ConfigurationForm : DialogForm
     {
 
-        protected static Configuration _config;
+        internal class Option
+        {
+            public object Value { get; set; }
+            public string Label { get; set; }
+
+            public override string ToString()
+            {
+                return Label;
+            }
+        }
+
+        public static readonly List<Option> LogLevelOptions = new List<Option>()
+        {
+            new Option { Value = DiscordRPC.Logging.LogLevel.None, Label = "None" },
+            new Option { Value = DiscordRPC.Logging.LogLevel.Error, Label = "Error" },
+            new Option { Value = DiscordRPC.Logging.LogLevel.Warning, Label = "Warning" },
+            new Option { Value = DiscordRPC.Logging.LogLevel.Info, Label = "Info" },
+            new Option { Value = DiscordRPC.Logging.LogLevel.Trace, Label = "Debug" },
+        };
+
+protected static Configuration _config;
 
         public event EventHandler OnSecretChanged;
-        class TokenChangedArgs : EventArgs
+        public class TokenChangedArgs : EventArgs
         {
             public string oldToken;
             public string newToken;
+        }
+
+        public event EventHandler OnLogLevelChanged;
+        public class LogLevelChangedArgs : EventArgs
+        {
+            public LogLevel? oldLogLevel;
+            public LogLevel? newLogLevel;
         }
 
         public ConfigurationForm(Configuration config)
@@ -24,6 +54,9 @@ namespace RecklessBoon.MacroDeck.Discord
 
             clientId.Text = config.ClientId;
             clientSecret.Text = config.ClientSecret;
+
+            logLevel.Items.AddRange(LogLevelOptions.ToArray<Option>());
+            logLevel.SelectedItem = LogLevelOptions.Find(item => item.Value.Equals(config.LogLevel));
         }
 
         private void BtnOk_Click(object sender, EventArgs e)
@@ -35,11 +68,20 @@ namespace RecklessBoon.MacroDeck.Discord
 
             if (oldSecret != newSecret)
             {
-                OnSecretChanged.Invoke(this, new TokenChangedArgs
+                OnSecretChanged?.Invoke(this, new TokenChangedArgs
                 {
                     oldToken = oldSecret,
                     newToken = newSecret
                 });
+            }
+
+            var oldLogLevel = _config.LogLevel;
+            var newLogLevel = (LogLevel)(logLevel.SelectedItem as Option)?.Value;
+            _config.LogLevel = newLogLevel;
+
+            if (!oldLogLevel.Equals(newLogLevel))
+            {
+                OnLogLevelChanged?.Invoke(this, new LogLevelChangedArgs { oldLogLevel = oldLogLevel, newLogLevel = newLogLevel });
             }
 
             _config.Save();
@@ -80,5 +122,6 @@ namespace RecklessBoon.MacroDeck.Discord
                 }
             }
         }
+
     }
 }

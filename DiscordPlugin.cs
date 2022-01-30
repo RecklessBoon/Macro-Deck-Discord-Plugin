@@ -15,13 +15,14 @@ using System.Drawing;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static RecklessBoon.MacroDeck.Discord.ConfigurationForm;
 
 namespace RecklessBoon.MacroDeck.Discord
 {
 
     public static class PluginInstance
     {
-        public static ILogger Logger = Debugger.IsAttached && Debugger.IsLogging() ? new DebugLogger() : null;
+        public static ILogger Logger = Debugger.IsAttached && Debugger.IsLogging() ? (ILogger)(new DebugLogger()) : (ILogger)(new MacroDeckLoggerProxy());
         public static DiscordPlugin Plugin;
         public static StateCache cache = new StateCache()
         {
@@ -109,7 +110,8 @@ namespace RecklessBoon.MacroDeck.Discord
         // Gets called when the plugin is loaded
         public override void Enable()
         {
-            configuration ??= new Configuration(PluginInstance.Plugin);
+            configuration ??= new Configuration(this);
+            PluginInstance.Logger.Level = configuration.LogLevel ?? LogLevel.None;
             ResetVariables();
             InitClient();
 
@@ -322,6 +324,14 @@ namespace RecklessBoon.MacroDeck.Discord
             {
                 if (RPCClient != null) RPCClient.Dispose();
                 InitClient();
+            };
+            configurator.OnLogLevelChanged += (object form, EventArgs e) =>
+            {
+                LogLevelChangedArgs args = e as LogLevelChangedArgs;
+                if (args.newLogLevel != null)
+                {
+                    PluginInstance.Logger.Level = (e as LogLevelChangedArgs).newLogLevel ?? LogLevel.None;
+                }
             };
             configurator.ShowDialog();
         }

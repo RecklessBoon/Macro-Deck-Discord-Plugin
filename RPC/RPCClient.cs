@@ -126,6 +126,7 @@ namespace RecklessBoon.MacroDeck.Discord.RPC
             {
                 IsConnected = false;
                 _connectStarted = true;
+                _logger?.Trace("RPC Connection Failed: " + args.ToString());
                 OnConnectFailed?.Invoke(this, EventArgs.Empty);
             };
             _client.Initialize();
@@ -144,6 +145,7 @@ namespace RecklessBoon.MacroDeck.Discord.RPC
                     await InitCurrentVoiceChannel();
                     _ = Subscribe("VOICE_CHANNEL_SELECT");
                     _ = Subscribe("VOICE_SETTINGS_UPDATE");
+                    _logger?.Info("Connection & Login established");
                     OnVoiceChannelSelect += Client_OnVoiceChannelSelect;
                 }
 
