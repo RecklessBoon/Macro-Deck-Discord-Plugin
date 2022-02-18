@@ -108,7 +108,7 @@ you change your mute/deafen state **while in a voice channel**
 ## Addendum
 
 ### Not a Standalone App
-<img align="right" height="64px" src="https://macrodeck.org/images/works_with_macrodeck2.png" />
+<img align="right" height="96px" src="https://macrodeck.org/images/macro_deck_2_community_plugin.png" />
 
 This is a plugin for [Macro Deck 2](https://github.com/SuchByte/Macro-Deck), it does **NOT** function as a standalone app
 
