@@ -33,12 +33,6 @@ namespace RecklessBoon.MacroDeck.Discord
     {
         public Configuration configuration;
 
-        // A short description what the plugin can do
-        public override string Description => "Discord Integration plugin";
-
-        // You can add a image from your resources here
-        public override System.Drawing.Image Icon => Properties.Resources.DiscordIcon;
-
         // Optional; If your plugin can be configured, set to "true". It'll make the "Configure" button appear in the package manager.
         public override bool CanConfigure => true;
 
