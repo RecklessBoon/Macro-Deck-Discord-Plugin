@@ -12,9 +12,16 @@ namespace RecklessBoon.MacroDeck.Discord.RPC
     //
     // Summary:
     //     A named pipe client using the .NET framework System.IO.Pipes.NamedPipeClientStream
-    public sealed class PipeClient : INamedPipeClient, IDisposable
+    public class PipeClient : INamedPipeClient, IDisposable
     {
-        public event EventHandler<PipeFrame> FrameRead;
+        public class FrameReadEventArgs : EventArgs
+        {
+            public PipeFrame Frame { get; set; }
+            private bool _yoinked = false;
+            public bool Yoinked { get { return _yoinked; } set { _yoinked = value; } }
+        }
+
+        public event EventHandler<FrameReadEventArgs> FrameRead;
 
         //
         // Summary:
@@ -326,8 +333,9 @@ namespace RecklessBoon.MacroDeck.Discord.RPC
                 }
 
                 frame = _framequeue.Dequeue();
-                FrameRead?.Invoke(this, frame);
-                return true;
+                var args = new FrameReadEventArgs() { Frame = frame };
+                FrameRead?.Invoke(this, args);
+                return !args.Yoinked;
             }
         }
 

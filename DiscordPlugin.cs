@@ -22,11 +22,12 @@ namespace RecklessBoon.MacroDeck.Discord
 
     public static class PluginInstance
     {
-        public static ILogger Logger = Debugger.IsAttached && Debugger.IsLogging() ? (ILogger)(new DebugLogger()) : (ILogger)(new MacroDeckLoggerProxy());
+        public static ILogger Logger = (ILogger)(new MacroDeckLoggerProxy());
         public static DiscordPlugin Plugin;
         public static StateCache cache = new StateCache()
         {
-            VoiceState = new VoiceState()
+            VoiceState = new VoiceState(),
+            Notifications = new List<NotificationCreateResponse>()
         };
     }
 
@@ -111,7 +112,7 @@ namespace RecklessBoon.MacroDeck.Discord
         public override void Enable()
         {
             configuration ??= new Configuration(this);
-            PluginInstance.Logger.Level = configuration.LogLevel ?? LogLevel.None;
+            PluginInstance.Logger.Level = Debugger.IsAttached && Debugger.IsLogging() ? LogLevel.Trace : configuration.LogLevel ?? LogLevel.None;
             ResetVariables();
             InitClient();
 
@@ -251,6 +252,8 @@ namespace RecklessBoon.MacroDeck.Discord
             RPCClient.OnConnectStateChanged += Client_OnConnectStateChanged;
             RPCClient.OnVoiceStateUpdate += Client_OnVoiceStateUpdate;
             RPCClient.OnVoiceSettingsUpdate += Client_OnVoiceSettingsUpdate;
+            RPCClient.OnNotificationCreate += Client_OnNotificationCreate;
+            RPCClient.OnChannelCreate += Client_OnChannelCreate;
         }
 
         private void CancelConnectingStatusLoop()
@@ -295,7 +298,8 @@ namespace RecklessBoon.MacroDeck.Discord
                 new VariableState { Name = "is_server_muted" },
                 new VariableState { Name = "is_server_deafened" },
                 new VariableState { Name = "is_any_muted" },
-                new VariableState { Name = "is_any_deafened" }
+                new VariableState { Name = "is_any_deafened" },
+                new VariableState { Name = "unread_notifications", Type = VariableType.String, Value = "" }
             });
         }
 
@@ -313,6 +317,31 @@ namespace RecklessBoon.MacroDeck.Discord
         protected void Client_OnVoiceStateUpdate(object sender, VoiceStateResponse payload)
         {
             UpdateVoiceStateVariables(payload.VoiceState);
+        }
+
+        private async void Client_OnNotificationCreate(object sender, NotificationCreateResponse payload)
+        {
+            var cache = PluginInstance.cache.Notifications;
+            cache.Add(payload);
+            SetVariable(new VariableState { Name = "unread_notifications", Type = VariableType.String, Value = JsonConvert.SerializeObject(cache) });
+            await RPCClient.Command("GET_CHANNEL", new { channel_id = payload.ChannelId });
+        }
+
+        private void Client_OnChannelCreate(object sender, ChannelCreateResponse payload)
+        {
+            var cache = PluginInstance.cache.Notifications;
+
+            var idx = -1;
+            try
+            {
+                idx = cache.FindIndex(notification => notification.ChannelId == payload.Id);
+            } catch (Exception) { }
+
+            if (idx >= 0) 
+            {
+                cache.RemoveAt(idx);
+            }
+            SetVariable(new VariableState { Name = "unread_notifications", Type = VariableType.String, Value = JsonConvert.SerializeObject(cache) });
         }
 
         // Optional; Gets called when the user clicks on the "Configure" button in the package manager; If CanConfigure is not set to true, you don't need to add this

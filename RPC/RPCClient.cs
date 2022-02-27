@@ -14,6 +14,7 @@ using System.Net.Http;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
+using static RecklessBoon.MacroDeck.Discord.RPC.PipeClient;
 
 namespace RecklessBoon.MacroDeck.Discord.RPC
 {
@@ -27,6 +28,8 @@ namespace RecklessBoon.MacroDeck.Discord.RPC
             "identify",
             "rpc",
             "rpc.activities.write",
+            "rpc.notifications.read",
+            "messages.read"
         };
 
         public event EventHandler OnConnectBegin;
@@ -37,10 +40,10 @@ namespace RecklessBoon.MacroDeck.Discord.RPC
         
         public event EventHandler<Payload> OnDispatch;
         public event EventHandler<Payload> OnReady;
-        public event EventHandler<Payload> OnError;
+        public event EventHandler<ErrorResponse> OnError;
         public event EventHandler<Payload> OnGuildStatus;
         public event EventHandler<Payload> OnGuildCreate;
-        public event EventHandler<Payload> OnChannelCreate;
+        public event EventHandler<ChannelCreateResponse> OnChannelCreate;
         public event EventHandler<ChannelSelectResponse> OnVoiceChannelSelect;
         public event EventHandler<VoiceStateResponse> OnVoiceStateCreate;
         public event EventHandler<VoiceStateResponse> OnVoiceStateUpdate;
@@ -52,7 +55,7 @@ namespace RecklessBoon.MacroDeck.Discord.RPC
         public event EventHandler<Payload> OnMessageCreate;
         public event EventHandler<Payload> OnMessageUpdate;
         public event EventHandler<Payload> OnMessageDelete;
-        public event EventHandler<Payload> OnNotificationCreate;
+        public event EventHandler<NotificationCreateResponse> OnNotificationCreate;
         public event EventHandler<Payload> OnActivityJoin;
         public event EventHandler<Payload> OnActivitySpectate;
         public event EventHandler<Payload> OnActivityJoinRequest;
@@ -131,22 +134,48 @@ namespace RecklessBoon.MacroDeck.Discord.RPC
             };
             _client.Initialize();
 
-            _pipe.FrameRead += (object sender, PipeFrame frame) =>
+            _pipe.FrameRead += (object sender, FrameReadEventArgs args) =>
             {
-                Payload payload = JsonConvert.DeserializeObject<Payload>(frame.Message);
+                Payload payload = JsonConvert.DeserializeObject<Payload>(args.Frame.Message);
+                if (payload.Evt == "ERROR")
+                {
+                    var error = payload.Data.ToObject<ErrorResponse>();
+                    if (error.Code == 4006)
+                    {
+                        IsConnected = false;
+                        _connectStarted = true;
+                        _logger?.Trace("RPC Connection Unauthorized for some reason. Reauthorizing...");
+                        _ = Authenticate();
+                    }
+                    _logger.Error(String.Format("Discord indicated an error:\n{0}", JsonConvert.SerializeObject(payload, Formatting.Indented)));
+                }
+                else if (payload.Evt == null)
+                {
+                    args.Yoinked = true;
+                }
                 OnDispatch?.Invoke(this, payload);
             };
+
 
             OnLoginComplete += async (object sender, AuthToken args) =>
             {
                 if (IsConnected == true)
                 {
-                    OnDispatch += RouteEvent;
+                    if (OnDispatch == null)
+                    {
+                        OnDispatch += RouteEvent;
+                    }
+
                     await InitCurrentVoiceChannel();
-                    _ = Subscribe("VOICE_CHANNEL_SELECT");
-                    _ = Subscribe("VOICE_SETTINGS_UPDATE");
+                    await Subscribe("VOICE_CHANNEL_SELECT");
+                    await Subscribe("VOICE_SETTINGS_UPDATE");
+                    await Subscribe("NOTIFICATION_CREATE");
+
+                    if (OnVoiceChannelSelect == null)
+                    {
+                        OnVoiceChannelSelect += Client_OnVoiceChannelSelect;
+                    }
                     _logger?.Info("Connection & Login established");
-                    OnVoiceChannelSelect += Client_OnVoiceChannelSelect;
                 }
 
                 OnConnectEnd?.Invoke(this, EventArgs.Empty);
@@ -221,38 +250,42 @@ namespace RecklessBoon.MacroDeck.Discord.RPC
             }
         }
 
+        protected async Task<AuthToken> Authenticate()
+        {
+            AuthToken token = await GetCurrentToken();
+
+            if (token == null || token.Scopes == null || !Enumerable.SequenceEqual(token.Scopes, SCOPES_REQUIRED))
+            {
+                token = await GetNewToken();
+                CredentialsHelper.UpsertCredential("auth_token", token);
+            }
+            if (token != null)
+            {
+                var response = await Authenticate(token.Token);
+                if (response == null)
+                {
+                    CredentialsHelper.RemoveCredential("auth_token");
+                    token = await GetNewToken();
+                    if (token != null)
+                    {
+                        CredentialsHelper.UpsertCredential("auth_token", token);
+                        response = await Authenticate(token.Token);
+                    }
+                }
+                if (response != null)
+                {
+                    PluginInstance.cache.CurrentUser = response.User;
+                    IsConnected = true;
+                }
+            }
+
+            return token;
+        }
+
         protected async void LoginClient(object sender, DiscordRPC.Message.ReadyMessage args)
         {
-            if (!IsConnected)
-            {
-                AuthToken token = await GetCurrentToken();
-
-                if (token == null || token.Scopes == null || !Enumerable.SequenceEqual(token.Scopes, SCOPES_REQUIRED))
-                {
-                    token = await GetNewToken();
-                    CredentialsHelper.UpsertCredential("auth_token", token);
-                }
-                if (token != null)
-                {
-                    var response = await Authenticate(token.Token);
-                    if (response == null)
-                    {
-                        CredentialsHelper.RemoveCredential("auth_token");
-                        token = await GetNewToken();
-                        if (token != null)
-                        {
-                            CredentialsHelper.UpsertCredential("auth_token", token);
-                            response = await Authenticate(token.Token);
-                        }
-                    }
-                    if (response != null)
-                    {
-                        PluginInstance.cache.CurrentUser = response.User;
-                        IsConnected = true;
-                    }
-                }
-                OnLoginComplete?.Invoke(sender, token);
-            }
+            var token = await Authenticate();
+            OnLoginComplete?.Invoke(sender, token);
         }
 
         protected async Task<AuthToken> GetCurrentToken()
@@ -438,11 +471,12 @@ namespace RecklessBoon.MacroDeck.Discord.RPC
                 var nonce = GenerateNonce();
                 Payload payload = null;
                 TaskCompletionSource<Payload> tcs = new TaskCompletionSource<Payload>();
-                EventHandler<PipeFrame> handler = (sender, frame) =>
+                EventHandler<FrameReadEventArgs> handler = (sender, args) =>
                 {
-                    payload = JsonConvert.DeserializeObject<Payload>(frame.Message);
+                    payload = JsonConvert.DeserializeObject<Payload>(args.Frame.Message);
                     if (payload.Nonce == nonce)
                     {
+                        args.Yoinked = true;
                         tcs.SetResult(payload);
                     }
                 };
@@ -454,27 +488,27 @@ namespace RecklessBoon.MacroDeck.Discord.RPC
                     nonce,
                     cmd = command,
                     evt = evt ?? "",
-                    args = args ?? ""
+                    args = args ?? new { }
                 };
-                _logger?.Info("\nCommand Request:\n{0}", JsonConvert.SerializeObject(request));
+                _logger?.Info("\nCommand Request:\n{0}", JsonConvert.SerializeObject(request, Formatting.Indented));
                 var written = _pipe.WriteFrame(new PipeFrame(Opcode.Frame, request));
 
                 if (written)
                 {
                     _ = Task.Run(() =>
                       {
-                          Thread.Sleep(10000);
+                          Thread.Sleep(30000);
                           if (tcs.Task.Status == TaskStatus.Running)
                           {
                               tcs.SetResult(null);
                           }
                       });
-                    await tcs.Task;
                 } else
                 {
                     _logger?.Error("Failed to write frame");
                     tcs.SetCanceled();
                 }
+                await tcs.Task;
 
                 _pipe.FrameRead -= handler;
                 return tcs.Task.Result;
@@ -490,14 +524,14 @@ namespace RecklessBoon.MacroDeck.Discord.RPC
         {
             try
             {
-                _logger?.Info("\nDispatch Response:\n{0}", JsonConvert.SerializeObject(payload));
+                _logger?.Info("\nDispatch Response:\n{0}", JsonConvert.SerializeObject(payload, Formatting.Indented));
                 switch (payload.Evt)
                 {
                     case "READY":
                         OnReady?.Invoke(this, payload);
                         break;
                     case "ERROR":
-                        OnError?.Invoke(this, payload);
+                        OnError?.Invoke(this, payload.Data.ToObject<ErrorResponse>());
                         break;
                     case "GUILD_STATUS":
                         OnGuildStatus?.Invoke(this, payload);
@@ -506,7 +540,7 @@ namespace RecklessBoon.MacroDeck.Discord.RPC
                         OnGuildCreate?.Invoke(this, payload);
                         break;
                     case "CHANNEL_CREATE":
-                        OnChannelCreate?.Invoke(this, payload);
+                        OnChannelCreate?.Invoke(this, payload.Data.ToObject<ChannelCreateResponse>());
                         break;
                     case "VOICE_CHANNEL_SELECT":
                         OnVoiceChannelSelect?.Invoke(this, payload.Data.ToObject<ChannelSelectResponse>());
@@ -542,7 +576,7 @@ namespace RecklessBoon.MacroDeck.Discord.RPC
                         OnMessageDelete?.Invoke(this, payload);
                         break;
                     case "NOTIFICATION_CREATE":
-                        OnNotificationCreate?.Invoke(this, payload);
+                        OnNotificationCreate?.Invoke(this, payload.Data.ToObject<NotificationCreateResponse>());
                         break;
                     case "ACTIVITY_JOIN":
                         OnActivityJoin?.Invoke(this, payload);

@@ -2,6 +2,7 @@
 using SuchByte.MacroDeck.Logging;
 using System;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace RecklessBoon.MacroDeck.Discord
 {
@@ -16,38 +17,50 @@ namespace RecklessBoon.MacroDeck.Discord
 
         public void Error(string message, params object[] args)
         {
-            if (Level > DiscordRPC.Logging.LogLevel.Error) return;
+            Task.Run(() =>
+            {
+                if (Level > DiscordRPC.Logging.LogLevel.Error) return;
 
-            if (args.Length > 0) message = String.Format(message, args);
-            message = ScrubSensitiveData(message);
-            MacroDeckLogger.Error(PluginInstance.Plugin, message.ToString());
+                if (args.Length > 0) message = String.Format(message, args);
+                message = ScrubSensitiveData(message);
+                MacroDeckLogger.Error(PluginInstance.Plugin, message.ToString());
+            });
         }
 
         public void Info(string message, params object[] args)
         {
-            if (Level > DiscordRPC.Logging.LogLevel.Info) return;
+            Task.Run(() =>
+            {
+                if (Level > DiscordRPC.Logging.LogLevel.Info) return;
 
-            if (args.Length > 0) message = String.Format(message, args);
-            message = ScrubSensitiveData(message);
-            MacroDeckLogger.Info(PluginInstance.Plugin, message.ToString());
+                if (args.Length > 0) message = String.Format(message, args);
+                message = ScrubSensitiveData(message);
+                MacroDeckLogger.Info(PluginInstance.Plugin, message.ToString());
+            });
         }
 
         public void Trace(string message, params object[] args)
         {
-            if (Level > DiscordRPC.Logging.LogLevel.Trace) return;
+            Task.Run(() =>
+            {
+                if (Level > DiscordRPC.Logging.LogLevel.Trace) return;
 
-            if (args.Length > 0) message = String.Format(message, args);
-            message = ScrubSensitiveData(message);
-            MacroDeckLogger.Trace(PluginInstance.Plugin, message.ToString());
+                if (args.Length > 0) message = String.Format(message, args);
+                message = ScrubSensitiveData(message);
+                MacroDeckLogger.Trace(PluginInstance.Plugin, message.ToString());
+            });
         }
 
         public void Warning(string message, params object[] args)
         {
-            if (Level > DiscordRPC.Logging.LogLevel.Warning) return;
+            Task.Run(() =>
+            {
+                if (Level > DiscordRPC.Logging.LogLevel.Warning) return;
 
-            if (args.Length > 0) message = String.Format(message, args);
-            message = ScrubSensitiveData(message);
-            MacroDeckLogger.Warning(PluginInstance.Plugin, message.ToString());
+                if (args.Length > 0) message = String.Format(message, args);
+                message = ScrubSensitiveData(message);
+                MacroDeckLogger.Warning(PluginInstance.Plugin, message.ToString());
+            });
         }
 
         protected string ScrubSensitiveData(string message)

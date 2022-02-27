@@ -23,6 +23,7 @@ namespace RecklessBoon.MacroDeck.Discord.Actions
             if (plugin.RPCClient != null && plugin.RPCClient.IsConnected)
             {
                 voiceState.SelfDeaf = true;
+                voiceState.SelfMute = true;
 
                 var client = plugin.RPCClient;
                 _ = client.Command("SET_VOICE_SETTINGS", new { deaf = voiceState.SelfDeaf });
