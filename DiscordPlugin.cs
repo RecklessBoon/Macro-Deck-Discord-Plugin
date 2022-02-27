@@ -93,12 +93,12 @@ namespace RecklessBoon.MacroDeck.Discord
 
             PluginInstance.cache.VoiceState = voiceState;
             SetVariable(new[] {
-                new VariableState { Name = "is_self_muted", Value = voiceState.SelfMute },
-                new VariableState { Name = "is_self_deafened", Value = voiceState.SelfDeaf },
-                new VariableState { Name = "is_server_muted", Value = voiceState.Mute },
-                new VariableState { Name = "is_server_deafened", Value = voiceState.Deaf },
-                new VariableState { Name = "is_any_muted", Value = voiceState.Mute || voiceState.SelfMute },
-                new VariableState { Name = "is_any_deafened", Value = voiceState.Deaf || voiceState.SelfDeaf },
+                new VariableState { Name = "is_self_muted", Value = voiceState.SelfMute, Save = false },
+                new VariableState { Name = "is_self_deafened", Value = voiceState.SelfDeaf, Save = false },
+                new VariableState { Name = "is_server_muted", Value = voiceState.Mute, Save = false },
+                new VariableState { Name = "is_server_deafened", Value = voiceState.Deaf, Save = false },
+                new VariableState { Name = "is_any_muted", Value = voiceState.Mute || voiceState.SelfMute, Save = false },
+                new VariableState { Name = "is_any_deafened", Value = voiceState.Deaf || voiceState.SelfDeaf, Save = false },
             });
         }
 
@@ -323,7 +323,7 @@ namespace RecklessBoon.MacroDeck.Discord
         {
             var cache = PluginInstance.cache.Notifications;
             cache.Add(payload);
-            SetVariable(new VariableState { Name = "unread_notifications", Type = VariableType.String, Value = JsonConvert.SerializeObject(cache) });
+            SetVariable(new VariableState { Name = "unread_notifications", Type = VariableType.String, Value = JsonConvert.SerializeObject(cache), Save = false });
             await RPCClient.Command("GET_CHANNEL", new { channel_id = payload.ChannelId });
         }
 
@@ -341,7 +341,7 @@ namespace RecklessBoon.MacroDeck.Discord
             {
                 cache.RemoveAt(idx);
             }
-            SetVariable(new VariableState { Name = "unread_notifications", Type = VariableType.String, Value = JsonConvert.SerializeObject(cache) });
+            SetVariable(new VariableState { Name = "unread_notifications", Type = VariableType.String, Value = JsonConvert.SerializeObject(cache), Save = false });
         }
 
         // Optional; Gets called when the user clicks on the "Configure" button in the package manager; If CanConfigure is not set to true, you don't need to add this

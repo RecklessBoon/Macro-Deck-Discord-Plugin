@@ -218,7 +218,7 @@ namespace RecklessBoon.MacroDeck.Discord.RPC
 
         private void Client_OnVoiceChannelSelect(object sender, ChannelSelectResponse payload)
         {
-            _logger?.Info("\nOnVoiceChannelSelect:\n{0}", JsonConvert.SerializeObject(payload).ToString());
+            _logger?.Trace("\nOnVoiceChannelSelect:\n{0}", JsonConvert.SerializeObject(payload).ToString());
 
             var cache = PluginInstance.cache;
 
@@ -398,7 +398,7 @@ namespace RecklessBoon.MacroDeck.Discord.RPC
             }
 
             var content = await http_response.Content.ReadAsStringAsync();
-            _logger?.Info("\nToken Swap Response:\n{0}", content);
+            _logger?.Trace("\nToken Swap Response:\n{0}", content);
 
             var json_response = JsonConvert.DeserializeObject<TokenResponse>(content);
             return json_response;
@@ -425,7 +425,7 @@ namespace RecklessBoon.MacroDeck.Discord.RPC
                 http_response.EnsureSuccessStatusCode();
 
                 var content = await http_response.Content.ReadAsStringAsync();
-                _logger?.Info("\nToken Refresh Response:\n{0}", content);
+                _logger?.Trace("\nToken Refresh Response:\n{0}", content);
 
                 json_response = JsonConvert.DeserializeObject<TokenResponse>(content);
             }
@@ -490,7 +490,7 @@ namespace RecklessBoon.MacroDeck.Discord.RPC
                     evt = evt ?? "",
                     args = args ?? new { }
                 };
-                _logger?.Info("\nCommand Request:\n{0}", JsonConvert.SerializeObject(request, Formatting.Indented));
+                _logger?.Trace("\nCommand Request:\n{0}", JsonConvert.SerializeObject(request, Formatting.Indented));
                 var written = _pipe.WriteFrame(new PipeFrame(Opcode.Frame, request));
 
                 if (written)
@@ -524,7 +524,7 @@ namespace RecklessBoon.MacroDeck.Discord.RPC
         {
             try
             {
-                _logger?.Info("\nDispatch Response:\n{0}", JsonConvert.SerializeObject(payload, Formatting.Indented));
+                _logger?.Trace("\nDispatch Response:\n{0}", JsonConvert.SerializeObject(payload, Formatting.Indented));
                 switch (payload.Evt)
                 {
                     case "READY":

@@ -10,7 +10,6 @@ namespace RecklessBoon.MacroDeck.Discord.RPC.Model
         public ulong? CurrentTextChannelID { get; set; }
         public ulong? CurrentVoiceChannelID { get; set; }
         public VoiceState VoiceState { get; set; }
-
         public List<NotificationCreateResponse> Notifications { get; set; }
     }
 }

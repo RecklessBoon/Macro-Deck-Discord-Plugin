@@ -1,5 +1,7 @@
-﻿using SuchByte.MacroDeck.ActionButton;
+﻿using RecklessBoon.MacroDeck.Discord.RPC.Model.Responses;
+using SuchByte.MacroDeck.ActionButton;
 using SuchByte.MacroDeck.Plugins;
+using System.Threading.Tasks;
 
 namespace RecklessBoon.MacroDeck.Discord.Actions
 {
@@ -22,11 +24,9 @@ namespace RecklessBoon.MacroDeck.Discord.Actions
 
             if (state != null && plugin.RPCClient != null && plugin.RPCClient.IsConnected)
             {
-                var newValue = !state.SelfDeaf;
-                state.SelfDeaf = newValue;
+                state.SelfDeaf = !state.SelfDeaf;
                 state.SelfMute = state.SelfDeaf == true || state.SelfMute;
-                plugin.UpdateVoiceStateVariables(state);
-                _ = plugin.RPCClient.Command("SET_VOICE_SETTINGS", new { deaf = newValue });
+                _ = plugin.RPCClient.Command("SET_VOICE_SETTINGS", new { deaf = state.SelfDeaf });
             }
             return;
         }

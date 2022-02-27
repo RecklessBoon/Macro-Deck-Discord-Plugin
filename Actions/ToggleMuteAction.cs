@@ -1,5 +1,6 @@
 ﻿using SuchByte.MacroDeck.ActionButton;
 using SuchByte.MacroDeck.Plugins;
+using System.Threading.Tasks;
 
 namespace RecklessBoon.MacroDeck.Discord.Actions
 {
@@ -25,7 +26,6 @@ namespace RecklessBoon.MacroDeck.Discord.Actions
                 state.SelfMute = !state.SelfMute;
                 state.SelfDeaf = state.SelfMute != false && state.SelfDeaf;
                 _ = plugin.RPCClient.Command("SET_VOICE_SETTINGS", new { mute = state.SelfMute });
-                plugin.UpdateVoiceStateVariables(state);
             }
             return;
         }
