@@ -1,0 +1,8 @@
+{
+  "name": "Discord Plugin",
+  "author": "RecklessBoon",
+  "repository": "https://github.com/RecklessBoon/Macro-Deck-Discord-Plugin",
+  "packageId": "RecklessBoon.DiscordPlugin",
+  "version": "1.1.6",
+  "target-plugin-api-version": 31
+}
