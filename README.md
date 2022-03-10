@@ -88,6 +88,8 @@ it's yours)
    - You will enter these in the Macro Deck plugin configuration screen shortly
    - The Public Key **IS NOT** the same as the Client Secret. Make sure you copy 
      the right one.
+5. BE SURE TO CLICK SAVE!
+   - It is very easy to miss the green button at the bottom of the screen
 
 
 ### Macro Deck 2
