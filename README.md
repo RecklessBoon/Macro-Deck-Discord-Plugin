@@ -70,6 +70,11 @@ Download/Install it directly in Macro Deck from the package manager.
 
 ## Configuration
 
+**Visual learner?** Here is my video tutorial for setting up this plugin in Macro 
+Deck 2
+<br/>
+[Macro Deck 2 Discord Plugin | Installation & Configuration](https://youtu.be/alSlrnzx-M8) 
+
 ### Discord Application
 
 > **NOTE:** Due to the nature of OAuth2.0 requiring a client secret to stay, well 
