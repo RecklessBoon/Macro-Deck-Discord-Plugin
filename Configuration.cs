@@ -17,6 +17,8 @@ namespace RecklessBoon.MacroDeck.Discord
         public string ClientSecret { get; set; }
         public string ClientId { get; set; }
 
+        public bool Debug { get; set; }
+
         public Configuration(DiscordPlugin plugin)
         {
             if (plugin != null)
@@ -71,6 +73,7 @@ namespace RecklessBoon.MacroDeck.Discord
                 {
                     var config = JsonConvert.DeserializeObject<Configuration>(json);
                     ClientId = config?.ClientId;
+                    Debug = config != null && config.Debug;
                 }
                 catch { }
             }

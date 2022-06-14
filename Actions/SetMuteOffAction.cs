@@ -1,5 +1,6 @@
 ﻿using SuchByte.MacroDeck.ActionButton;
 using SuchByte.MacroDeck.Plugins;
+using System;
 
 namespace RecklessBoon.MacroDeck.Discord.Actions
 {
@@ -17,17 +18,24 @@ namespace RecklessBoon.MacroDeck.Discord.Actions
         // Gets called when the action is triggered by a button press or an event
         public override void Trigger(string clientId, ActionButton actionButton)
         {
-            var plugin = PluginInstance.Plugin;
-            var voiceState = PluginInstance.cache.VoiceState;
-
-            if (plugin.RPCClient != null && plugin.RPCClient.IsConnected)
+            try
             {
-                voiceState.SelfMute = false;
+                var plugin = PluginInstance.Plugin;
+                var voiceState = PluginInstance.cache.VoiceState;
 
-                var client = plugin.RPCClient;
-                _ = client.Command("SET_VOICE_SETTINGS", new { mute = voiceState.SelfMute });
+                if (plugin.RPCClient != null && plugin.RPCClient.IsConnected)
+                {
+                    voiceState.SelfMute = false;
 
-                plugin.UpdateVoiceStateVariables(voiceState);
+                    var client = plugin.RPCClient;
+                    _ = client.Command("SET_VOICE_SETTINGS", new { mute = voiceState.SelfMute });
+
+                    plugin.UpdateVoiceStateVariables(voiceState);
+                }
+            }
+            catch (Exception ex)
+            {
+                PluginInstance.Logger.Error("Unexpected Exception:\n{0}", ex);
             }
             return;
         }

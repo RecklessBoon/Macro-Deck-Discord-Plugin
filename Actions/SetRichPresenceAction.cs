@@ -4,6 +4,7 @@ using SuchByte.MacroDeck.ActionButton;
 using SuchByte.MacroDeck.GUI;
 using SuchByte.MacroDeck.GUI.CustomControls;
 using SuchByte.MacroDeck.Plugins;
+using System;
 
 namespace RecklessBoon.MacroDeck.Discord.Actions
 {
@@ -27,44 +28,51 @@ namespace RecklessBoon.MacroDeck.Discord.Actions
         // Gets called when the action is triggered by a button press or an event
         public override void Trigger(string clientId, ActionButton actionButton)
         {
-            var _client = PluginInstance.Plugin.RPCClient;
-            var config = SetRichPresenceConfig.LoadRichPresenceConfig(Configuration);
-            if (_client != null && !string.IsNullOrWhiteSpace(config.Details))
+            try
             {
-                Timestamps timestamps = null;
-                if (config.DelayStart != null || config.Duration != null)
+                var _client = PluginInstance.Plugin.RPCClient;
+                var config = SetRichPresenceConfig.LoadRichPresenceConfig(Configuration);
+                if (_client != null && !string.IsNullOrWhiteSpace(config.Details))
                 {
-                    var start = config.DelayStart != default ? (System.DateTime?)System.DateTime.UtcNow.AddSeconds((double)config.DelayStart) : null;
-                    var endStart = start != default ? start : System.DateTime.UtcNow;
-                    var end = config.Duration != default ? endStart?.AddSeconds((double)config.Duration) : null;
-                    timestamps = new Timestamps
+                    Timestamps timestamps = null;
+                    if (config.DelayStart != null || config.Duration != null)
                     {
-                        Start = start,
-                        End = end
+                        var start = config.DelayStart != default ? (System.DateTime?)System.DateTime.UtcNow.AddSeconds((double)config.DelayStart) : null;
+                        var endStart = start != default ? start : System.DateTime.UtcNow;
+                        var end = config.Duration != default ? endStart?.AddSeconds((double)config.Duration) : null;
+                        timestamps = new Timestamps
+                        {
+                            Start = start,
+                            End = end
+                        };
+                    }
+
+                    var richPresence = new RichPresence
+                    {
+                        Details = config.Details,
+                        State = config.State
                     };
-                }
-
-                var richPresence = new RichPresence
-                {
-                    Details = config.Details,
-                    State = config.State
-                };
-                if (timestamps != null)
-                {
-                    richPresence.Timestamps = timestamps;
-                }
-                if (config.LargeImageKey != null || config.SmallImageKey != null)
-                {
-                    richPresence.WithAssets(new Assets
+                    if (timestamps != null)
                     {
-                        LargeImageKey = config.LargeImageKey,
-                        LargeImageText = config.LargeImageText,
-                        SmallImageKey = config.SmallImageKey,
-                        SmallImageText = config.SmallImageText,
-                    });
-                }
+                        richPresence.Timestamps = timestamps;
+                    }
+                    if (config.LargeImageKey != null || config.SmallImageKey != null)
+                    {
+                        richPresence.WithAssets(new Assets
+                        {
+                            LargeImageKey = config.LargeImageKey,
+                            LargeImageText = config.LargeImageText,
+                            SmallImageKey = config.SmallImageKey,
+                            SmallImageText = config.SmallImageText,
+                        });
+                    }
 
-                _client.BaseClient.SetPresence(richPresence);
+                    _client.BaseClient.SetPresence(richPresence);
+                }
+            }
+            catch (Exception ex)
+            {
+                PluginInstance.Logger.Error("Unexpected Exception:\n{0}", ex);
             }
             return;
         }

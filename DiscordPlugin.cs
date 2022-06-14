@@ -1,5 +1,4 @@
 ﻿using DiscordRPC.Logging;
-using Newtonsoft.Json;
 using RecklessBoon.MacroDeck.Discord.Actions;
 using RecklessBoon.MacroDeck.Discord.RPC;
 using RecklessBoon.MacroDeck.Discord.RPC.Model;
@@ -10,7 +9,6 @@ using SuchByte.MacroDeck.Plugins;
 using SuchByte.MacroDeck.Variables;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,7 +19,7 @@ namespace RecklessBoon.MacroDeck.Discord
 
     public static class PluginInstance
     {
-        public static ILogger Logger = Debugger.IsAttached && Debugger.IsLogging() ? new DebugLogger() : null;
+        public static AppLogger Logger;
         public static DiscordPlugin Plugin;
         public static StateCache cache = new StateCache()
         {
@@ -97,86 +95,115 @@ namespace RecklessBoon.MacroDeck.Discord
         public DiscordPlugin()
         {
             PluginInstance.Plugin ??= this;
+            PluginInstance.Logger ??= new AppLogger();
             SuchByte.MacroDeck.MacroDeck.OnMainWindowLoad += MacroDeck_OnMainWindowLoad;
         }
 
         // Gets called when the plugin is loaded
         public override void Enable()
         {
-            configuration ??= new Configuration(PluginInstance.Plugin);
-            ResetVariables();
-            InitClient();
-
-            Actions = new List<PluginAction>
+            try
             {
-                // add the instances of your actions here
-                new ExecuteWebhookAction(),
-                new SetMuteOnAction(),
-                new SetMuteOffAction(),
-                new ToggleMuteAction(),
-                new SetDeafenOnAction(),
-                new SetDeafenOffAction(),
-                new ToggleDeafenAction(),
-                new SetRichPresenceAction(),
-                new ClearRichPresenceAction(),
-            };
+                configuration ??= new Configuration(PluginInstance.Plugin);
+                ResetVariables();
+                InitClient();
+
+                Actions = new List<PluginAction>
+                {
+                    // add the instances of your actions here
+                    new ExecuteWebhookAction(),
+                    new SetMuteOnAction(),
+                    new SetMuteOffAction(),
+                    new ToggleMuteAction(),
+                    new SetDeafenOnAction(),
+                    new SetDeafenOffAction(),
+                    new ToggleDeafenAction(),
+                    new SetRichPresenceAction(),
+                    new ClearRichPresenceAction(),
+                };
+            }
+            catch (Exception ex)
+            {
+                PluginInstance.Logger.Error("Unexpected Exception:\n{0}", ex);
+            }
         }
 
         private void MacroDeck_OnMainWindowLoad(object sender, EventArgs e)
         {
-            mainWindow = sender as MainWindow;
-            statusButton = new ContentSelectorButton();
-            statusButton.BackgroundImageLayout = ImageLayout.Zoom;
-            UpdateStatusButton(RPCClient != null && RPCClient.IsConnected);
-            statusButton.Click += StatusButton_Click;
-            mainWindow.contentButtonPanel.Controls.Add(statusButton);
+            try
+            {
+                mainWindow = sender as MainWindow;
+                statusButton = new ContentSelectorButton();
+                statusButton.BackgroundImageLayout = ImageLayout.Zoom;
+                UpdateStatusButton(RPCClient != null && RPCClient.IsConnected);
+                statusButton.Click += StatusButton_Click;
+                mainWindow.contentButtonPanel.Controls.Add(statusButton);
+            }
+            catch (Exception ex)
+            {
+                PluginInstance.Logger.Error("Unexpected Exception:\n{0}", ex);
+            }
         }
 
         private void StatusButton_Click(object sender, EventArgs e)
         {
-            if (configuration == null || !configuration.IsFullySet)
+            try
             {
-                OpenConfigurator();
-            }
-            else
-            {
-                Task.Run(() =>
+                if (configuration == null || !configuration.IsFullySet)
                 {
-                    if (RPCClient != null && !RPCClient.IsDisposed)
+                    OpenConfigurator();
+                }
+                else
+                {
+                    Task.Run(() =>
                     {
-                        RPCClient.Dispose();
-                    }
-                    else if (RPCClient == null || RPCClient.IsDisposed || !RPCClient.IsConnected)
-                    {
-                        InitClient();
-                    }
-                });
+                        if (RPCClient != null && !RPCClient.IsDisposed)
+                        {
+                            RPCClient.Dispose();
+                        }
+                        else if (RPCClient == null || RPCClient.IsDisposed || !RPCClient.IsConnected)
+                        {
+                            InitClient();
+                        }
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                PluginInstance.Logger.Error("Unexpected Exception:\n{0}", ex);
             }
         }
 
         private async Task StartStatusLoop()
         {
-            if (connectingStatusLoop == null || connectingStatusLoop.Status != TaskStatus.Running)
+            try
             {
-                connectingStatusLoopCTS = new CancellationTokenSource();
-                CancellationToken ct = connectingStatusLoopCTS.Token;
-
-                connectingStatusLoop = Task.Run(() =>
+                if (connectingStatusLoop == null || connectingStatusLoop.Status != TaskStatus.Running)
                 {
-                    do
+                    connectingStatusLoopCTS = new CancellationTokenSource();
+                    CancellationToken ct = connectingStatusLoopCTS.Token;
+
+                    connectingStatusLoop = Task.Run(() =>
                     {
-                        if (connectingStatusLoopCTS.IsCancellationRequested) return;
-                        UpdateStatusButton(true);
-                        Thread.Sleep(750);
+                        do
+                        {
+                            if (connectingStatusLoopCTS.IsCancellationRequested) return;
+                            UpdateStatusButton(true);
+                            Thread.Sleep(750);
 
-                        if (connectingStatusLoopCTS.IsCancellationRequested) return;
-                        UpdateStatusButton(false);
-                        Thread.Sleep(750);
-                    } while ((RPCClient == null || !RPCClient.IsConnected) && !connectingStatusLoopCTS.IsCancellationRequested);
-                }, ct);
+                            if (connectingStatusLoopCTS.IsCancellationRequested) return;
+                            UpdateStatusButton(false);
+                            Thread.Sleep(750);
+                        } while ((RPCClient == null || !RPCClient.IsConnected) && !connectingStatusLoopCTS.IsCancellationRequested);
+                    }, ct);
 
-                await connectingStatusLoop;
-                UpdateStatusButton(RPCClient != null && RPCClient.IsConnected);
+                    await connectingStatusLoop;
+                    UpdateStatusButton(RPCClient != null && RPCClient.IsConnected);
+                }
+            }
+            catch (Exception ex)
+            {
+                PluginInstance.Logger.Error("Unexpected Exception:\n{0}", ex);
             }
         }
 
@@ -214,24 +241,39 @@ namespace RecklessBoon.MacroDeck.Discord
 
         private void UpdateStatusButton(bool connected)
         {
-            if (mainWindow != null && mainWindow.IsHandleCreated)
+            try
             {
-                mainWindow.BeginInvoke(new Action(() =>
+                if (mainWindow != null && mainWindow.IsHandleCreated)
                 {
-                    Bitmap bm = connected ? Properties.Resources.Discord_Logo_Color_64x49 : Properties.Resources.Discord_Logo_White_64x49;
-                    statusButton.BackgroundImage = PadBitmap(bm, 1.35f);
-                    statusToolTip.SetToolTip(statusButton, "Discord " + (connected ? " Connected" : "Disconnected"));
-                }));
+                    mainWindow.BeginInvoke(new Action(() =>
+                    {
+                        Bitmap bm = connected ? Properties.Resources.Discord_Logo_Color_64x49 : Properties.Resources.Discord_Logo_White_64x49;
+                        statusButton.BackgroundImage = PadBitmap(bm, 1.35f);
+                        statusToolTip.SetToolTip(statusButton, "Discord " + (connected ? " Connected" : "Disconnected"));
+                    }));
+                }
+            }
+            catch (Exception ex)
+            {
+                PluginInstance.Logger.Error("Unexpected Exception:\n{0}", ex);
             }
         }
 
         protected void InitClient()
         {
-            if ((RPCClient == null || RPCClient.IsDisposed) && !String.IsNullOrEmpty(PluginInstance.Plugin.configuration.ClientId))
+            try
             {
-                _RPCClient = new RPCClient(PluginInstance.Plugin.configuration.ClientId);
-                ConnectClients();
-                RPCClient.Start();
+                if ((RPCClient == null || RPCClient.IsDisposed) && !String.IsNullOrEmpty(PluginInstance.Plugin.configuration.ClientId))
+                {
+                    _RPCClient = new RPCClient(PluginInstance.Plugin.configuration.ClientId);
+                    ConnectClients();
+                    RPCClient.Start();
+                }
+            }
+            catch (Exception ex)
+            {
+                if (RPCClient != null && !RPCClient.IsDisposed) RPCClient.Dispose();
+                PluginInstance.Logger.Error("Unexpected Exception ocurred while initializing the RPC client:\n{0}", ex);
             }
         }
 
@@ -272,11 +314,18 @@ namespace RecklessBoon.MacroDeck.Discord
 
         private void Client_OnConnectEnd(object sender, EventArgs e)
         {
-            if (RPCClient != null && !RPCClient.IsConnected)
+            try
             {
-                _RPCClient = null;
+                if (RPCClient != null && !RPCClient.IsConnected)
+                {
+                    _RPCClient = null;
+                }
+                CancelConnectingStatusLoop();
             }
-            CancelConnectingStatusLoop();
+            catch (Exception ex)
+            {
+                PluginInstance.Logger.Error("Unexpected Exception:\n{0}", ex);
+            }
         }
 
         protected void ResetVariables()
@@ -293,18 +342,32 @@ namespace RecklessBoon.MacroDeck.Discord
 
         private void Client_OnVoiceSettingsUpdate(object sender, VoiceSettingsResponse payload)
         {
-            if (PluginInstance.cache.CurrentVoiceChannelID == null)
+            try
             {
-                var currentVoiceState = PluginInstance.cache.VoiceState;
-                currentVoiceState.SelfMute = payload.IsMute || payload.IsDeaf;
-                currentVoiceState.SelfDeaf = payload.IsDeaf;
-                UpdateVoiceStateVariables(currentVoiceState);
+                if (PluginInstance.cache.CurrentVoiceChannelID == null)
+                {
+                    var currentVoiceState = PluginInstance.cache.VoiceState;
+                    currentVoiceState.SelfMute = payload.IsMute || payload.IsDeaf;
+                    currentVoiceState.SelfDeaf = payload.IsDeaf;
+                    UpdateVoiceStateVariables(currentVoiceState);
+                }
+            }
+            catch (Exception ex)
+            {
+                PluginInstance.Logger.Error("Unexpected Exception:\n{0}", ex);
             }
         }
 
         protected void Client_OnVoiceStateUpdate(object sender, VoiceStateResponse payload)
         {
-            UpdateVoiceStateVariables(payload.VoiceState);
+            try
+            {
+                UpdateVoiceStateVariables(payload.VoiceState);
+            }
+            catch (Exception ex)
+            {
+                PluginInstance.Logger.Error("Unexpected Exception:\n{0}", ex);
+            }
         }
 
         // Optional; Gets called when the user clicks on the "Configure" button in the package manager; If CanConfigure is not set to true, you don't need to add this
@@ -314,8 +377,29 @@ namespace RecklessBoon.MacroDeck.Discord
             using var configurator = new ConfigurationForm(configuration);
             configurator.OnSecretChanged += (object form, EventArgs e) =>
             {
-                if (RPCClient != null) RPCClient.Dispose();
-                InitClient();
+                try
+                {
+                    if (RPCClient != null) RPCClient.Dispose();
+                    InitClient();
+                }
+                catch (Exception ex)
+                {
+                    PluginInstance.Logger.Error("Unexpected Exception:\n{0}", ex);
+                }
+            };
+            configurator.OnDebugLoggingChanged += (object form, EventArgs e) =>
+            {
+                try
+                {
+                    if (RPCClient != null)
+                    {
+                        RPCClient.SyncClientLogger();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    PluginInstance.Logger.Error("Unexpected Exception:\n{0}", ex);
+                }
             };
             configurator.ShowDialog();
         }

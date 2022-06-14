@@ -11,6 +11,8 @@ namespace RecklessBoon.MacroDeck.Discord
         protected static Configuration _config;
 
         public event EventHandler OnSecretChanged;
+        public event EventHandler OnDebugLoggingChanged;
+
         class TokenChangedArgs : EventArgs
         {
             public string oldToken;
@@ -24,6 +26,7 @@ namespace RecklessBoon.MacroDeck.Discord
 
             clientId.Text = config.ClientId;
             clientSecret.Text = config.ClientSecret;
+            cbxDebugLogging.Checked = config.Debug;
         }
 
         private void BtnOk_Click(object sender, EventArgs e)
@@ -32,6 +35,8 @@ namespace RecklessBoon.MacroDeck.Discord
             var newSecret = clientSecret.Text;
             _config.ClientId = clientId.Text;
             _config.ClientSecret = newSecret;
+            var oldDebugLogging = _config.Debug;
+            _config.Debug = cbxDebugLogging.Checked;
 
             if (oldSecret != newSecret)
             {
@@ -40,6 +45,11 @@ namespace RecklessBoon.MacroDeck.Discord
                     oldToken = oldSecret,
                     newToken = newSecret
                 });
+            }
+
+            if (oldDebugLogging != _config.Debug)
+            {
+                OnDebugLoggingChanged?.Invoke(this, EventArgs.Empty);
             }
 
             _config.Save();

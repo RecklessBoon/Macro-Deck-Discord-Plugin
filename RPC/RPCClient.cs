@@ -12,6 +12,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Security.Cryptography;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -91,8 +92,14 @@ namespace RecklessBoon.MacroDeck.Discord.RPC
         {
             ApplicationID = applicationId;
             _pipe = new PipeClient();
-            _logger = PluginInstance.Logger;
-            _client = new DiscordRpcClient(applicationID: ApplicationID, client: _pipe, logger: _logger);
+            _client = new DiscordRpcClient(applicationID: ApplicationID, client: _pipe);
+            SyncClientLogger();
+        }
+
+        public void SyncClientLogger()
+        {
+            _logger = PluginInstance.Plugin.configuration.Debug ? (ILogger)(new DebugLogger(PluginInstance.Logger)) : (ILogger)(new NullLogger());
+            _client.Logger = _logger;
         }
 
         public void Dispose()
@@ -285,7 +292,7 @@ namespace RecklessBoon.MacroDeck.Discord.RPC
                 code = await Authorize();
             } catch (AuthRejectedException ex)
             {
-                _logger?.Trace(ex.ToString());
+                _logger?.Error(ex.ToString());
                 return null;
             }
 
@@ -358,12 +365,11 @@ namespace RecklessBoon.MacroDeck.Discord.RPC
             }
             catch (Exception ex)
             {
-                _logger?.Error(String.Format("Failed to swap grant code for authentication token:\n{0}", ex.ToString()));
+                _logger?.Error("Error occured during RecklessBoon.MacroDeck.Discord.RPC.RPCClient.SwapForToken()");
                 return null;
             }
 
             var content = await http_response.Content.ReadAsStringAsync();
-            _logger?.Info("\nToken Swap Response:\n{0}", content);
 
             var json_response = JsonConvert.DeserializeObject<TokenResponse>(content);
             return json_response;
@@ -390,13 +396,12 @@ namespace RecklessBoon.MacroDeck.Discord.RPC
                 http_response.EnsureSuccessStatusCode();
 
                 var content = await http_response.Content.ReadAsStringAsync();
-                _logger?.Info("\nToken Refresh Response:\n{0}", content);
 
                 json_response = JsonConvert.DeserializeObject<TokenResponse>(content);
             }
             catch (Exception ex)
             {
-                _logger?.Error("\nToken Refresh Response Failed:\n{0}", ex.Message);
+                _logger?.Error("Error occured during RecklessBoon.MacroDeck.Discord.RPC.RPCClient.RefreshToken()");
             }
             return json_response;
         }
@@ -454,7 +459,7 @@ namespace RecklessBoon.MacroDeck.Discord.RPC
                     evt = evt ?? "",
                     args = args ?? ""
                 };
-                _logger?.Info("\nCommand Request:\n{0}", JsonConvert.SerializeObject(request));
+                _logger.Trace(String.Format("\nCommand Request:\n{0}", JsonConvert.SerializeObject(request)));
                 var written = _pipe.WriteFrame(new PipeFrame(Opcode.Frame, request));
 
                 if (written)
@@ -470,7 +475,7 @@ namespace RecklessBoon.MacroDeck.Discord.RPC
                     await tcs.Task;
                 } else
                 {
-                    _logger?.Error("Failed to write frame");
+                    _logger?.Error(String.Format("Failed to write frame\n:{0}", request.ToString()));
                     tcs.SetCanceled();
                 }
 
@@ -488,7 +493,7 @@ namespace RecklessBoon.MacroDeck.Discord.RPC
         {
             try
             {
-                _logger?.Info("\nDispatch Response:\n{0}", JsonConvert.SerializeObject(payload));
+                _logger.Trace(String.Format("\nDispatch Response:\n{0}", JsonConvert.SerializeObject(payload)));
                 switch (payload.Evt)
                 {
                     case "READY":

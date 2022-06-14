@@ -3,9 +3,7 @@ using SuchByte.MacroDeck.GUI;
 using SuchByte.MacroDeck.GUI.CustomControls;
 using SuchByte.MacroDeck.Plugins;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
 
 namespace RecklessBoon.MacroDeck.Discord.Actions
 {
@@ -29,13 +27,20 @@ namespace RecklessBoon.MacroDeck.Discord.Actions
         // Gets called when the action is triggered by a button press or an event
         public override void Trigger(string clientId, ActionButton actionButton)
         {
-            var _client = PluginInstance.Plugin.RPCClient;
-            if (_client != null)
+            try
             {
-                _ = _client.Command("SET_ACTIVITY", new
+                var _client = PluginInstance.Plugin.RPCClient;
+                if (_client != null)
                 {
-                    pid = Process.GetCurrentProcess().Id
-                });
+                    _ = _client.Command("SET_ACTIVITY", new
+                    {
+                        pid = Process.GetCurrentProcess().Id
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                PluginInstance.Logger.Error("Unexpected Exception:\n{0}", ex);
             }
             return;
         }

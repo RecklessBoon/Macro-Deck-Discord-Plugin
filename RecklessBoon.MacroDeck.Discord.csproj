@@ -4,7 +4,7 @@
 	<TargetFramework>netcoreapp3.1</TargetFramework>
 	<RootNamespace>RecklessBoon.MacroDeck.Discord</RootNamespace>
 	<UseWindowsForms>true</UseWindowsForms>
-    <Version>1.1.8</Version>
+    <Version>1.1.9</Version>
 	<RepositoryUrl>https://github.com/RecklessBoon/Macro-Deck-Discord-Plugin</RepositoryUrl>
     <Authors>RecklessBoon</Authors>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
@@ -54,7 +54,10 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy /Y &quot;$(TargetDir)$(TargetName).dll&quot; &quot;%25AppData%25\Macro Deck\plugins\RecklessBoon.DiscordPlugin\$(TargetName).dll&quot;" />
+      <Exec Command="if not exist &quot;$(ProjectDir)..\..\Macro Deck 2\Macro-Deck\bin\Debug\netcoreapp3.1\Data\plugins\$(PackageId)&quot; mkdir &quot;$(ProjectDir)..\..\Macro Deck 2\Macro-Deck\bin\Debug\netcoreapp3.1\Data\plugins\$(PackageId)&quot;" />
+      <Exec Command="copy /Y &quot;$(ProjectDir)ExtensionManifest.json&quot; &quot;$(ProjectDir)..\..\Macro Deck 2\Macro-Deck\bin\Debug\netcoreapp3.1\Data\plugins\$(PackageId)\ExtensionManifest.json&quot;" />
+      <Exec Command="copy /Y &quot;$(ProjectDir)ExtensionIcon.png&quot; &quot;$(ProjectDir)..\..\Macro Deck 2\Macro-Deck\bin\Debug\netcoreapp3.1\Data\plugins\$(PackageId)\ExtensionIcon.png&quot;" />
+      <Exec Command="copy /Y &quot;$(TargetDir)*.dll&quot; &quot;$(ProjectDir)..\..\Macro Deck 2\Macro-Deck\bin\Debug\netcoreapp3.1\Data\plugins\$(PackageId)\&quot;" />
   </Target>
 
 </Project>
