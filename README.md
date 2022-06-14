@@ -103,6 +103,10 @@ it's yours)
    necessary)
 3. Click the "Configure" button
 4. Enter the Client Id and Client Secret noted before
+   - Debug Field
+       a. Only check this if requested by Macro Deck Discord mod (or if you are curious)
+       b. Could have a performance impact due to attempted sensitive information scrubbing
+           i. <b><i>IT IS STILL YOUR RESPONSIBLITY</i></b> to ensure sensitive data is removed or redacted before sending log files
 5. If your Discord application hasn't already popped up, switch to it
 6. It should be asking if your Discord Application can connect and do certain 
    things on your client. Here you should allow it to.
