@@ -17,7 +17,7 @@ namespace RecklessBoon.MacroDeck.Discord
         public string ClientSecret { get; set; }
         public string ClientId { get; set; }
 
-        public bool Debug { get; set; }
+        public bool Debug { get; set; } = false;
 
         public Configuration(DiscordPlugin plugin)
         {
