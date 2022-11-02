@@ -266,7 +266,17 @@ namespace RecklessBoon.MacroDeck.Discord.RPC
             var creds = PluginCredentials.GetPluginCredentials(PluginInstance.Plugin)?.First();
             if (creds != null && creds.ContainsKey("auth_token"))
             {
-                var authToken = JsonConvert.DeserializeObject<AuthToken>(creds["auth_token"]);
+                AuthToken authToken = null;
+                try
+                {
+                    authToken = JsonConvert.DeserializeObject<AuthToken>(creds["auth_token"]);
+                }
+                catch (JsonReaderException jre)
+                {
+                    // Log it and continue
+                    _logger.Error("Unable to retrieve existing AuthToken");
+                }
+
                 // TODO: Check expiration time
                 if (authToken != null && authToken.Token != null)
                 {

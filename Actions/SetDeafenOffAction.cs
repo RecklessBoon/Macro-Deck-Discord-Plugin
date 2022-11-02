@@ -6,6 +6,8 @@ namespace RecklessBoon.MacroDeck.Discord.Actions
 {
     public class SetDeafenOffAction : PluginAction
     {
+        public override string BindableVariable => "discord_is_self_deafened";
+
         // The name of the action
         public override string Name => "Set Deafen Off";
 

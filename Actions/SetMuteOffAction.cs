@@ -6,6 +6,8 @@ namespace RecklessBoon.MacroDeck.Discord.Actions
 {
     public class SetMuteOffAction : PluginAction
     {
+        public override string BindableVariable => "discord_is_self_muted";
+
         // The name of the action
         public override string Name => "Set Mute Off";
 
