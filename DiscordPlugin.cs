@@ -10,6 +10,7 @@ using SuchByte.MacroDeck.Variables;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -59,13 +60,13 @@ namespace RecklessBoon.MacroDeck.Discord
 
         public void SetVariable(VariableState variableState)
         {
-            VariableManager.SetValue(string.Format("discord_{0}", variableState.Name), variableState.Value, variableState.Type, this, variableState.Save);
+            VariableManager.SetValue(string.Format("discord_{0}", variableState.Name), variableState.Value, variableState.Type, this, []);
         }
 
         public string GetVariable(string key)
         {
             var name = String.Format("discord_{0}", key);
-            return VariableManager.Variables.Find(x => x.Name == name).Value;
+            return VariableManager.Variables.Where(x => x.Name == name).ToString();
         }
 
         public void SetVariable(VariableState[] variableStates)
@@ -362,7 +363,10 @@ namespace RecklessBoon.MacroDeck.Discord
         {
             try
             {
-                UpdateVoiceStateVariables(payload.VoiceState);
+                if (payload.User.Id == PluginInstance.cache.CurrentUser.Id)
+                {
+                    UpdateVoiceStateVariables(payload.VoiceState);
+                }
             }
             catch (Exception ex)
             {
