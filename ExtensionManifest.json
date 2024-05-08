@@ -4,7 +4,8 @@
   "author": "RecklessBoon",
   "repository": "https://github.com/RecklessBoon/Macro-Deck-Discord-Plugin",
   "packageId": "RecklessBoon.DiscordPlugin",
-  "version": "1.1.11",
-  "target-plugin-api-version": 36,
+  "version": "1.1.12",
+  "target-plugin-api-version": 40,
+  "target-macro-deck-version":  "2.13.2",
   "dll": "Discord Plugin.dll"
 }
