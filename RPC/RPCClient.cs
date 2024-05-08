@@ -363,7 +363,7 @@ namespace RecklessBoon.MacroDeck.Discord.RPC
             {
                 http_response.EnsureSuccessStatusCode();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 _logger?.Error("Error occured during RecklessBoon.MacroDeck.Discord.RPC.RPCClient.SwapForToken()");
                 return null;
@@ -399,7 +399,7 @@ namespace RecklessBoon.MacroDeck.Discord.RPC
 
                 json_response = JsonConvert.DeserializeObject<TokenResponse>(content);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 _logger?.Error("Error occured during RecklessBoon.MacroDeck.Discord.RPC.RPCClient.RefreshToken()");
             }
